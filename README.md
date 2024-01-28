@@ -9,7 +9,7 @@ $ docker-compose up --buid -d
 
 Enter in container and check db:
 ```
-$ docker exec -it CONTAINER_ID exec psql -u admin hb_notification
+$ docker exec -it CONTAINER_ID exec psql -u USERNAME DB_NAME
 ```
 
 
