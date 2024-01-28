@@ -1,4 +1,4 @@
-# Telegram birthday bot <hr> #
+# Telegram birthday bot #
 
 #### Bot sends reminders about registered users birthdays and keeps records of gift fees ####
 
