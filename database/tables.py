@@ -1,4 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
+
 from database.database import Base
 
 
@@ -10,6 +12,8 @@ class User(Base):
     telegram_id = Column(Integer)
     birthday_date = Column(Date)
 
+    events = relationship('Event', uselist=False, backref='user')
+
     def __repr__(self):
         return f'{self.id}. {self.user_name}'
 
@@ -18,8 +22,18 @@ class Event(Base):
     __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True)
-    active = Column(Boolean, default=True)
-    birthday_user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    payer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    active = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+    payers = relationship("Payer", backref="event")
+
+
+class Payer(Base):
+    __tablename__ = "payers"
+
+    id = Column(Integer, primary_key=True)
     payment_status = Column(Boolean, default=False)
     summ = Column(Integer, default=0)
+
+    event_id = Column(Integer, ForeignKey('events.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)

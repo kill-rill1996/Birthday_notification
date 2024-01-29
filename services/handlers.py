@@ -2,13 +2,13 @@ from datetime import datetime
 
 from aiogram import Dispatcher, types
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram import F
 from aiogram.filters import StateFilter
 
 from services.fsm_states import storage, FSMUserState
-from services.messages import hello_message, successful_user_create_message
+from services.messages import hello_message, successful_user_create_message, upcoming_events_message
 from services.utils import parse_birthday_date
 from services.keyboards import create_user_key_board, cancel_inline_keyboard
 from config import SALT as s
@@ -26,6 +26,27 @@ async def command_start_handler(message: types.Message) -> None:
     """
     await message.answer(hello_message(message), parse_mode=ParseMode.HTML)
     await message.answer("Создайте аккаунт", reply_markup=create_user_key_board().as_markup())
+
+
+@dp.message(Command("registration"))
+async def command_register_handler(message: types.Message, state: FSMContext):
+    """Регистрация пользователя с помощью команды '/registration'"""
+    await state.set_state(FSMUserState.user_name)
+    await message.answer("Укажите ваше имя", reply_markup=cancel_inline_keyboard().as_markup())
+
+
+@dp.message(Command("help"))
+async def command_help_handler(message: types.Message):
+    """Вспомогательная инструкция с помощью команды '/help'"""
+    await message.answer("Что умеет этот бот")
+
+
+@dp.message(Command("events"))
+async def command_events_handler(message: types.Message):
+    """Вывод событий на ближайший месяц с помощью команды '/events'"""
+    events = db.get_events_for_month(message.from_user.id)
+    msg = upcoming_events_message(events)
+    await message.answer(msg)
 
 
 async def create_user_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
@@ -62,7 +83,7 @@ async def add_birthday_date_handler(message: types.Message, state: FSMContext):
 
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
-    await callback.message.answer("Создайте аккаунт", reply_markup=create_user_key_board().as_markup())
+    await callback.message.answer("Действие отменено")
 
 
 def dp_register_handlers(dp: Dispatcher):

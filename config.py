@@ -5,7 +5,7 @@ load_dotenv()
 # telegram
 TOKEN = os.getenv('TOKEN')
 
-# db posthgres
+# db postgresql
 DB_USER = os.getenv('POSTGRES_USER')
 DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DB_NAME = os.getenv('POSTGRES_DB')
