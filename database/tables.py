@@ -12,7 +12,7 @@ class User(Base):
     telegram_id = Column(Integer)
     birthday_date = Column(Date)
 
-    events = relationship('Event', uselist=False, backref='user')
+    events = relationship('Event', uselist=False, backref='user', cascade="all,delete")
 
     def __repr__(self):
         return f'{self.id}. {self.user_name}'
@@ -25,7 +25,10 @@ class Event(Base):
     active = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
-    payers = relationship("Payer", backref="event")
+    payers = relationship("Payer", backref="event", cascade="all,delete")
+
+    def __repr__(self):
+        return f'{self.id}. {self.user_id} {self.user.birthday_date}'
 
 
 class Payer(Base):
@@ -34,6 +37,6 @@ class Payer(Base):
     id = Column(Integer, primary_key=True)
     payment_status = Column(Boolean, default=False)
     summ = Column(Integer, default=0)
+    user_id = Column(Integer, nullable=False, unique=True)
 
     event_id = Column(Integer, ForeignKey('events.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)

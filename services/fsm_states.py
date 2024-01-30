@@ -9,3 +9,7 @@ class FSMUserState(StatesGroup):
     user_name = State()
     birthday_date = State()
 
+
+class FsmUpdateUser(StatesGroup):
+    new_username = State()
+    new_birthday_date = State()

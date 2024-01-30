@@ -16,8 +16,9 @@ def create_user(data: dict, tg_id: int):
 def get_events_for_month(tg_id: int) -> List[tables.Event]:
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
-        events = session.query(tables.User).filter(tables.Event.user_id != user.id)\
-            .options(joinedload(tables.Event.user_id)).all()
+        events = session.query(tables.Event).filter(tables.Event.user_id != user.id).all()
+        for event in events:
+            print(event)
         return events
 
 
@@ -26,3 +27,18 @@ def get_user_by_tg_id(tg_id: int) -> tables.User:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         return user
 
+
+def delete_user(tg_id: int) -> tables.User:
+    with Session() as session:
+        user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
+        session.delete(user)
+        session.commit()
+        return user
+
+
+def update_user_username():
+    pass
+
+
+def update_user_birthdate():
+    pass

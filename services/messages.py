@@ -21,7 +21,7 @@ def upcoming_events_message(events: List[tables.Event]) -> str:
     if events:
         msg = "В ближайщий месяц будут следующие события:\n"
         for idx, event in enumerate(events):
-            sub_msg = f"{idx + 1}. {event.user.birthday_date} день рождения у {event.user.user_name}\n"
+            sub_msg = f"{idx + 1}. <b>{event.user.birthday_date}</b> день рождения у пользователя <b>{event.user.user_name}</b>\n"
             msg += sub_msg
         msg.rstrip()
     else:

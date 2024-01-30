@@ -20,3 +20,29 @@ def cancel_inline_keyboard():
         text="Отмена", callback_data="cancel")
     )
     return keyboard
+
+
+def yes_no_keyboard():
+    """Клавиатура для подтверждения действия"""
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Да", callback_data="yes_delete"),
+        InlineKeyboardButton(
+            text="Нет", callback_data="no_delete"
+        )
+    )
+    return keyboard
+
+
+def update_profile_keyboard():
+    """Клавиатура для обновления профиля"""
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Имя", callback_data="name_update"),
+        InlineKeyboardButton(
+            text="Дата рождения", callback_data="date_update"
+        )
+    )
+    return keyboard
