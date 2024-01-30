@@ -79,13 +79,13 @@ async def update_profile_confirmation_handler(message: types.Message, state: FSM
     """Оповещение об успешном изменении данных имени или даты рождения"""
     current_state = await state.get_state()
     if current_state == FsmUpdateUser.new_username:
-        db.update_user_username() # TODO
+        db.update_user_username(message.from_user.id, message.text)
         await state.clear()
         await message.answer("Имя успешно изменено")
     else:
         try:
             birthday_date_parsed = parse_birthday_date(message.text)
-            db.update_user_birthdate() # TODO
+            db.update_user_birthdate(message.from_user.id, birthday_date_parsed)
             await state.clear()
             await message.answer("Дата рождения успешно изменена")
         except DateValidationError:

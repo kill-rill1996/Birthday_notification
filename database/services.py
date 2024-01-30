@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from sqlalchemy.orm import joinedload
@@ -36,9 +37,15 @@ def delete_user(tg_id: int) -> tables.User:
         return user
 
 
-def update_user_username():
-    pass
+def update_user_username(tg_id: int, username: str):
+    with Session() as session:
+        user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
+        user.user_name = username
+        session.commit()
 
 
-def update_user_birthdate():
-    pass
+def update_user_birthdate(tg_id: int, birthday_date: datetime.date):
+    with Session() as session:
+        user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
+        user.birthday_date = birthday_date
+        session.commit()
