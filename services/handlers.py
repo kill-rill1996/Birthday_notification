@@ -98,7 +98,9 @@ async def update_profile_confirmation_handler(message: types.Message, state: FSM
             await state.clear()
             await message.answer("Дата рождения успешно изменена")
         except DateValidationError:
-            await message.answer(f"Неверный формат даты. Попробуйте еще раз")
+            await message.answer(f"Неверный формат даты. Необходимо ввести дату в формате <b>ДД.ММ.ГГГГ</b>. "
+                                 f"Попробуйте еще раз", parse_mode=ParseMode.HTML,
+                                 reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
 async def confirm_delete_handler(callback: types.CallbackQuery):
