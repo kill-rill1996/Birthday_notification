@@ -31,8 +31,16 @@ async def command_start_handler(message: types.Message) -> None:
 @dp.message(Command("registration"))
 async def command_register_handler(message: types.Message, state: FSMContext):
     """Регистрация пользователя с помощью команды '/registration'"""
-    await state.set_state(FSMUserState.user_name)
-    await message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
+    user = db.get_user_by_tg_id(message.from_user.id)
+
+    if user:
+        await message.answer(f"Вы уже зарегистрированы. Ваши данные <b>{user.user_name} "
+                             f"{datetime.strftime(user.birthday_date, '%d.%m.%Y')}</b>\n"
+                             f"Вы можете изменить свой профиль с помощью команды /update "
+                             f"или удалить его с помощью команды /delete", parse_mode=ParseMode.HTML)
+    else:
+        await state.set_state(FSMUserState.user_name)
+        await message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
 @dp.message(Command("help"))
