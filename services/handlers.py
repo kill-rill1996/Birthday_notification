@@ -71,7 +71,8 @@ async def update_profile_handler(callback: types.CallbackQuery, state: FSMContex
         msg = f'Текущие имя пользователя "{user.user_name}", отправьте новое имя пользователя.'
     else:
         await state.set_state(FsmUpdateUser.new_birthday_date)
-        msg = f'Ваша дата рождения "{user.birthday_date}", отправьте дату дня рождения в формате ДД.ММ.ГГГГ.'
+        birthday_date = datetime.strftime(user.birthday_date, '%d.%m.%Y')
+        msg = f'Ваша дата рождения "{birthday_date}", отправьте дату дня рождения в формате ДД.ММ.ГГГГ.'
     await callback.message.answer(msg, reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 

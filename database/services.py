@@ -1,8 +1,6 @@
 import datetime
 from typing import List
 
-from sqlalchemy.orm import joinedload
-
 from database import tables
 from .database import Session
 
