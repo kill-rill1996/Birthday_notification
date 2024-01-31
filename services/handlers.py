@@ -8,7 +8,7 @@ from aiogram import F
 from aiogram.filters import StateFilter
 
 from services.fsm_states import storage, FSMUserState, FsmUpdateUser
-from services.messages import hello_message, successful_user_create_message, upcoming_events_message
+from services.messages import hello_message, successful_user_create_message, upcoming_events_message, profile_message
 from services.utils import parse_birthday_date
 from services import keyboards as kb
 from config import SALT as s
@@ -69,6 +69,14 @@ async def command_update_profile_handler(message: types.Message):
     """Изменение данных своего профиля"""
     msg = "Выберите что хотите изменить"
     await message.answer(msg, reply_markup=kb.update_profile_keyboard().as_markup())
+
+
+@dp.message(Command("profile"))
+async def command_profile_handler(message: types.Message):
+    """Вывод своего профиля (имя и дата рождения)"""
+    user = db.get_user_by_tg_id(message.from_user.id)
+    msg = profile_message(user.user_name, user.birthday_date)
+    await message.answer(msg, parse_mode=ParseMode.HTML)
 
 
 async def update_profile_handler(callback: types.CallbackQuery, state: FSMContext):

@@ -28,3 +28,10 @@ def upcoming_events_message(events: List[tables.Event]) -> str:
         msg = "В ближайщий месяц событий нет"
     return msg
 
+
+def profile_message(username: str, birthday_date: datetime.date) -> str:
+    parsed_birthday_date = datetime.strftime(birthday_date, '%d.%m.%Y')
+    msg = f"Ваши данные\nИмя <b>'{username}'</b> дата рождения <b>'{parsed_birthday_date}'</b>\n\n" \
+          f"Вы можете изменить профиль с помощью команды /update или удалить с помощью команды /delete"
+    return msg
+
