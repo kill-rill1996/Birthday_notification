@@ -16,8 +16,6 @@ def get_events_for_month(tg_id: int) -> List[tables.Event]:
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
         events = session.query(tables.Event).filter(tables.Event.user_id != user.id).all()
-        for event in events:
-            print(event)
         return events
 
 

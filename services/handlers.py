@@ -8,7 +8,8 @@ from aiogram import F
 from aiogram.filters import StateFilter
 
 from services.fsm_states import storage, FSMUserState, FsmUpdateUser
-from services.messages import hello_message, successful_user_create_message, upcoming_events_message, profile_message
+from services.messages import hello_message, successful_user_create_message, upcoming_events_message, profile_message, \
+    help_message
 from services.utils import parse_birthday_date
 from services import keyboards as kb
 from config import SALT as s
@@ -46,7 +47,7 @@ async def command_register_handler(message: types.Message, state: FSMContext):
 @dp.message(Command("help"))
 async def command_help_handler(message: types.Message):
     """Вспомогательная инструкция с помощью команды '/help'"""
-    await message.answer("Что умеет этот бот")
+    await message.answer(help_message())
 
 
 @dp.message(Command("events"))
