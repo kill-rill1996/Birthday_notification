@@ -22,8 +22,8 @@ async def set_commands(bot: Bot):
         BotCommand(command="registration", description="Регистрация"),
         BotCommand(command="events", description="Ближайшие события"),
         BotCommand(command="profile", description="Профиль"),
-        BotCommand(command="update", description="Изменение профиля"),
-        BotCommand(command="delete", description="Удаление профиля"),
+        BotCommand(command="update", description="Изменить профиль"),
+        BotCommand(command="delete", description="Удалить профиль"),
         BotCommand(command="help", description="Справка"),
     ]
 
