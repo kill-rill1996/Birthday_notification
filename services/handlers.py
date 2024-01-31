@@ -24,8 +24,8 @@ async def command_start_handler(message: types.Message) -> None:
     """
     This handler receives messages with `/start` command
     """
-    await message.answer(hello_message(message), parse_mode=ParseMode.HTML)
-    await message.answer("Создайте аккаунт", reply_markup=kb.create_user_key_board().as_markup())
+    await message.answer(hello_message(message), parse_mode=ParseMode.HTML, reply_markup=kb.create_user_key_board().as_markup())
+    await message.answer("Если у вас уже есть аккаунт - проигнорируйте это сообщение")
 
 
 @dp.message(Command("registration"))
