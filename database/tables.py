@@ -9,7 +9,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     user_name = Column(String)
-    telegram_id = Column(Integer)
+    telegram_id = Column(Integer, index=True)
     birthday_date = Column(Date)
 
     events = relationship('Event', uselist=False, backref='user', cascade="all,delete")
