@@ -19,7 +19,8 @@ async def init_bot() -> None:
     await set_commands(bot)
 
     # middleware
-    dp.message.middleware.register(CheckRegistrationMiddleware())
+    # dp.message.middleware.register(CheckRegistrationMiddleware())
+    notifications.router.message.middleware.register(CheckRegistrationMiddleware())
     # add routers
     dp.include_routers(registration.router, notifications.router)
 

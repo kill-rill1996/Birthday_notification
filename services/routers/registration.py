@@ -18,7 +18,7 @@ import database.services as db
 router = Router()
 
 
-@router.message(CommandStart(), flags={"not_private_operation": "true"})
+@router.message(CommandStart())
 async def command_start_handler(message: types.Message) -> None:
     """
     This handler receives messages with `/start` command
@@ -27,7 +27,7 @@ async def command_start_handler(message: types.Message) -> None:
     await message.answer("Если у вас уже есть аккаунт - проигнорируйте это сообщение")
 
 
-@router.message(Command("registration"), flags={"not_private_operation": "true"})
+@router.message(Command("registration"))
 async def command_register_handler(message: types.Message, state: FSMContext):
     """Регистрация пользователя с помощью команды '/registration'"""
     user = db.get_user_by_tg_id(message.from_user.id)
@@ -42,7 +42,7 @@ async def command_register_handler(message: types.Message, state: FSMContext):
         await message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
-@router.message(Command("help"), flags={"not_private_operation": "true"})
+@router.message(Command("help"))
 async def command_help_handler(message: types.Message):
     """Вспомогательная инструкция с помощью команды '/help'"""
     await message.answer(help_message())
@@ -50,14 +50,14 @@ async def command_help_handler(message: types.Message):
 
 @router.callback_query(lambda callback: callback.data == "Создать аккаунт",
                        StateFilter(None),
-                       flags={"not_private_operation": "true"})
+                       )
 async def create_user_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
     """Начало создание пользователя, инициализация FSM"""
     await state.set_state(FSMUserState.user_name)
     await callback.message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
-@router.message(FSMUserState.user_name, flags={"not_private_operation": "true"})
+@router.message(FSMUserState.user_name)
 async def add_username_fsm_handler(message: types.Message, state: FSMContext):
     """Добавление username в FSM"""
     await state.update_data(user_name=message.text)
@@ -67,7 +67,7 @@ async def add_username_fsm_handler(message: types.Message, state: FSMContext):
                          parse_mode=ParseMode.HTML)
 
 
-@router.message(FSMUserState.birthday_date, flags={"not_private_operation": "true"})
+@router.message(FSMUserState.birthday_date)
 async def add_birthday_date_handler(message: types.Message, state: FSMContext):
     """Добавление birthday date в FSM"""
     try:
@@ -84,9 +84,3 @@ async def add_birthday_date_handler(message: types.Message, state: FSMContext):
     except DateValidationError:
         await message.answer(f"Неверный формат даты. Попробуйте еще раз")
 
-
-@router.callback_query(lambda callback: callback.data == 'cancel', StateFilter("*"), flags={"not_private_operation": "true"})
-async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.message.answer("Действие отменено")
-    await callback.message.delete()
