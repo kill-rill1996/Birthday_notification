@@ -30,8 +30,9 @@ async def command_start_handler(message: types.Message) -> None:
 @router.message(Command("registration"))
 async def command_register_handler(message: types.Message, state: FSMContext):
     """Регистрация пользователя с помощью команды '/registration'"""
-    user = db.get_user_by_tg_id(message.from_user.id)
 
+    # проверяем зарегистрирован ли пользователь
+    user = db.get_user_by_tg_id(message.from_user.id)
     if user:
         await message.answer(f"Вы уже зарегистрированы. Ваши данные <b>{user.user_name} "
                              f"{datetime.strftime(user.birthday_date, '%d.%m.%Y')}</b>\n"
@@ -84,3 +85,9 @@ async def add_birthday_date_handler(message: types.Message, state: FSMContext):
     except DateValidationError:
         await message.answer(f"Неверный формат даты. Попробуйте еще раз")
 
+
+@router.callback_query(lambda callback: callback.data == 'cancel', StateFilter("*"))
+async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.answer("Действие отменено")
+    await callback.message.delete()

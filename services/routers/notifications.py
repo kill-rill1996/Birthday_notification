@@ -8,6 +8,7 @@ from aiogram.filters import StateFilter
 
 from services.fsm_states import FsmUpdateUser
 from services.messages import upcoming_events_message, profile_message
+from services.middlewares import CheckRegistrationMiddleware
 from services.utils import parse_birthday_date
 from services import keyboards as kb
 from services.errors import DateValidationError
@@ -15,6 +16,7 @@ import database.services as db
 
 
 router = Router()
+router.message.middleware.register(CheckRegistrationMiddleware())
 
 
 @router.message(Command("events"))
@@ -32,19 +34,19 @@ async def command_delete_self_user_handler(message: types.Message):
     await message.answer(msg, reply_markup=kb.yes_no_keyboard().as_markup())
 
 
-@router.message(Command("update"))
-async def command_update_profile_handler(message: types.Message):
-    """Изменение данных своего профиля"""
-    msg = "Выберите что хотите изменить"
-    await message.answer(msg, reply_markup=kb.update_profile_keyboard().as_markup())
-
-
 @router.message(Command("profile"))
 async def command_profile_handler(message: types.Message):
     """Вывод своего профиля (имя и дата рождения)"""
     user = db.get_user_by_tg_id(message.from_user.id)
     msg = profile_message(user.user_name, user.birthday_date)
     await message.answer(msg, parse_mode=ParseMode.HTML)
+
+
+@router.message(Command("update"))
+async def command_update_profile_handler(message: types.Message):
+    """Изменение данных своего профиля"""
+    msg = "Выберите что хотите изменить"
+    await message.answer(msg, reply_markup=kb.update_profile_keyboard().as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'update')
@@ -59,6 +61,7 @@ async def update_profile_handler(callback: types.CallbackQuery, state: FSMContex
         birthday_date = datetime.strftime(user.birthday_date, '%d.%m.%Y')
         msg = f'Ваша дата рождения "{birthday_date}", отправьте дату дня рождения в формате ДД.ММ.ГГГГ.'
     await callback.message.answer(msg, reply_markup=kb.cancel_inline_keyboard().as_markup())
+    await callback.message.edit_text(msg)
 
 
 @router.message(StateFilter(FsmUpdateUser.new_username, FsmUpdateUser.new_birthday_date))
