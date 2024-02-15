@@ -6,7 +6,7 @@ from aiogram.types import BotCommand, BotCommandScopeDefault
 from services.errors import DateValidationError
 
 
-def parse_birthday_date(message: str):
+def parse_birthday_date(message: str) -> datetime.date:
     """Проверяет валидность введенной даты и переводит в формат datetime"""
     try:
         result = datetime.strptime(message, "%d.%m.%Y").date()
