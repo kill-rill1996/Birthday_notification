@@ -45,4 +45,9 @@ def update_profile_keyboard():
             text="Дата рождения", callback_data="date_update"
         )
     )
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Отмена", callback_data="something_cancel"
+        )
+    )
     return keyboard
