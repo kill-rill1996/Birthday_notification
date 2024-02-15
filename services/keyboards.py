@@ -17,7 +17,7 @@ def cancel_inline_keyboard():
     """Клавиатура для отмены"""
     keyboard = InlineKeyboardBuilder()
     keyboard.row(InlineKeyboardButton(
-        text="Отмена", callback_data="cancel")
+        text="Отмена", callback_data="something_cancel")
     )
     return keyboard
 

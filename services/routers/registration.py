@@ -86,7 +86,7 @@ async def add_birthday_date_handler(message: types.Message, state: FSMContext):
         await message.answer(f"Неверный формат даты. Попробуйте еще раз")
 
 
-@router.callback_query(lambda callback: callback.data == 'cancel', StateFilter("*"))
+@router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.answer("Действие отменено")

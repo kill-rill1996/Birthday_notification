@@ -60,8 +60,7 @@ async def update_profile_handler(callback: types.CallbackQuery, state: FSMContex
         await state.set_state(FsmUpdateUser.new_birthday_date)
         birthday_date = datetime.strftime(user.birthday_date, '%d.%m.%Y')
         msg = f'Ваша дата рождения "{birthday_date}", отправьте дату дня рождения в формате ДД.ММ.ГГГГ.'
-    await callback.message.answer(msg, reply_markup=kb.cancel_inline_keyboard().as_markup())
-    await callback.message.edit_text(msg)
+    await callback.message.edit_text(msg, reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
 @router.message(StateFilter(FsmUpdateUser.new_username, FsmUpdateUser.new_birthday_date))
@@ -95,7 +94,7 @@ async def confirm_delete_handler(callback: types.CallbackQuery):
     await callback.message.delete()
 
 
-@router.callback_query(lambda callback: callback.data == 'cancel', StateFilter("*"), flags={"not_private_operation": "true"})
+@router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"), flags={"not_private_operation": "true"})
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.answer("Действие отменено")
