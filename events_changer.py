@@ -32,5 +32,4 @@ def is_less_then_30_days(birth_date: datetime) -> bool:
 
 
 if __name__ == "__main__":
-    database.create_db()
     main()

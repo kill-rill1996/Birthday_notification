@@ -23,7 +23,7 @@ class Event(Base):
 
     id = Column(Integer, primary_key=True)
     active = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
 
     payers = relationship("Payer", backref="event", cascade="all,delete")
 
@@ -37,6 +37,6 @@ class Payer(Base):
     id = Column(Integer, primary_key=True)
     payment_status = Column(Boolean, default=False)
     summ = Column(Integer, default=0)
-    user_id = Column(Integer, nullable=False, unique=True)
+    user_id = Column(Integer, nullable=False)
 
     event_id = Column(Integer, ForeignKey('events.id'), nullable=False)
