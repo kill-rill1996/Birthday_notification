@@ -27,6 +27,13 @@ async def command_start_handler(message: types.Message) -> None:
     await message.answer("Если у вас уже есть аккаунт - проигнорируйте это сообщение")
 
 
+@router.message(Command("help"))
+async def command_help_handler(message: types.Message):
+    """Вспомогательная инструкция с помощью команды '/help'"""
+    await message.answer(help_message())
+
+
+# создание пользователя через команду (/registration)
 @router.message(Command("registration"))
 async def command_register_handler(message: types.Message, state: FSMContext):
     """Регистрация пользователя с помощью команды '/registration'"""
@@ -43,19 +50,21 @@ async def command_register_handler(message: types.Message, state: FSMContext):
         await message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
-@router.message(Command("help"))
-async def command_help_handler(message: types.Message):
-    """Вспомогательная инструкция с помощью команды '/help'"""
-    await message.answer(help_message())
-
-
-@router.callback_query(lambda callback: callback.data == "Создать аккаунт",
-                       StateFilter(None),
-                       )
+# создание пользователя через кнопку (callback)
+@router.callback_query(lambda callback: callback.data == "create_account", StateFilter(None))
 async def create_user_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
     """Начало создание пользователя, инициализация FSM"""
-    await state.set_state(FSMUserState.user_name)
-    await callback.message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
+    # проверяем зарегистрирован ли пользователь
+    user = db.get_user_by_tg_id(callback.from_user.id)
+    if user:
+        await callback.message.delete()
+        await callback.message.answer(f"Вы уже зарегистрированы. Ваши данные <b>{user.user_name} "
+                             f"{datetime.strftime(user.birthday_date, '%d.%m.%Y')}</b>\n"
+                             f"Вы можете изменить свой профиль с помощью команды /update "
+                             f"или удалить его с помощью команды /delete", parse_mode=ParseMode.HTML)
+    else:
+        await state.set_state(FSMUserState.user_name)
+        await callback.message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
 @router.message(FSMUserState.user_name)

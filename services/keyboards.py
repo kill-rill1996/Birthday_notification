@@ -8,7 +8,7 @@ def create_user_key_board():
     """Клавиатура для старта создания профиля"""
     keyboard = InlineKeyboardBuilder()
     keyboard.row(InlineKeyboardButton(
-        text="Создать аккаунт", callback_data="Создать аккаунт")
+        text="Создать аккаунт", callback_data="create_account")
     )
     return keyboard
 
