@@ -27,6 +27,7 @@ async def set_commands(bot: Bot):
         BotCommand(command="update", description="Изменить профиль"),
         BotCommand(command="delete", description="Удалить профиль"),
         BotCommand(command="help", description="Справочная информация"),
+        BotCommand(command="admin", description="Панель администратора"),
     ]
 
     await bot.set_my_commands(commands, BotCommandScopeDefault())

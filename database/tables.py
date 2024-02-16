@@ -22,9 +22,10 @@ class Event(Base):
     __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True)
-    active = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
+    active = Column(Boolean, default=False) # TODO возможно исправить на флаг (др или что-то иное)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True) # TODO исправить nullable на True для возможности добавления осбытий не связанных с др (например корпоратив, праздник ...)
     event_date = Column(Date)
+    # TODO добавить общую сумму собранную на событие
 
     payers = relationship("Payer", backref="event", cascade="all,delete")
 
