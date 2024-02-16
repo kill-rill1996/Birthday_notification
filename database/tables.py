@@ -11,7 +11,7 @@ class User(Base):
     user_name = Column(String)
     telegram_id = Column(Integer, index=True)
     birthday_date = Column(Date)
-    # TODO добавить ник пользователя, чтобы можно было вставлять его в сообщениях для быстрого перехода в диалог с ним
+    tg_username = Column(String, nullable=True)    # data["event_from_user"].username
 
     events = relationship('Event', uselist=False, backref='user', cascade="all,delete")
 

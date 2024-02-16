@@ -30,7 +30,10 @@ async def admin_panel_handler(message: Union[types.Message, types.CallbackQuery]
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'events')
 async def events_handler(callback: types.CallbackQuery):
     events = db.get_all_events()
-    await callback.message.answer("Список всех активных событий:", reply_markup=kb.all_events_keyboard(events).as_markup())
+    msg = "Список всех активных событий:"
+    if not events:
+        msg = "Активных событий в ближайший месяц нет."
+    await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'delete-user')

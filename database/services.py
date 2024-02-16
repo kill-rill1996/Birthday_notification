@@ -7,9 +7,12 @@ from .database import Session
 from events_changer import transform_birthdate_in_current_year
 
 
-def create_user(data: dict, tg_id: int):
+def create_user(data: dict, tg_id: int, tg_username: str):
     with Session() as session:
-        user = tables.User(user_name=data["user_name"], telegram_id=tg_id, birthday_date=data["birthday_date"])
+        user = tables.User(user_name=data["user_name"],
+                           telegram_id=tg_id,
+                           birthday_date=data["birthday_date"],
+                           tg_username=tg_username)
         session.add(user)
         session.commit()
 

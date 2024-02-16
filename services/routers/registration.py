@@ -86,7 +86,10 @@ async def add_birthday_date_handler(message: types.Message, state: FSMContext):
         data = await state.get_data()
 
         # Создание пользователя в базе данных
-        db.create_user(data, message.from_user.id)
+        if message.from_user.username == None: # защита от пустого data["event_from_user"].username
+            db.create_user(data, message.from_user.id, "")
+        else:
+            db.create_user(data, message.from_user.id, message.from_user.username)
 
         await message.answer(successful_user_create_message(data), parse_mode=ParseMode.HTML)
         await state.clear()

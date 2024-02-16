@@ -39,7 +39,10 @@ def profile_message(username: str, birthday_date: datetime.date) -> str:
 def all_users_admin_message(users: List[tables.User]):
     message = "Список зарегистрированных пользователей:\n\n"
     for count, user in enumerate(users, start=1):
-        message += f"{count}. <b>{user.user_name}</b> {datetime.strftime(user.birthday_date, '%d.%m.%Y')} @ссылка\n" # TODO вставить ссылку на пользователя
+        if user.tg_username == "":
+            message += f"{count}. <b>{user.user_name}</b> {datetime.strftime(user.birthday_date, '%d.%m.%Y')}\n"
+        else:
+            message += f"{count}. <b>{user.user_name}</b> {datetime.strftime(user.birthday_date, '%d.%m.%Y')} {'@' + user.tg_username}\n"
     return message
 
 
