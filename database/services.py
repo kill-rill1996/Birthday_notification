@@ -70,9 +70,17 @@ def get_user_by_tg_id(tg_id: int) -> tables.User:
         return user
 
 
-def delete_user(tg_id: int) -> tables.User:
+def delete_user_by_tg_id(tg_id: int) -> tables.User:
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
+        session.delete(user)
+        session.commit()
+        return user
+
+
+def delete_user_by_id(user_id: int) -> tables.User:
+    with Session() as session:
+        user = session.query(tables.User).filter_by(id=user_id).first()
         session.delete(user)
         session.commit()
         return user

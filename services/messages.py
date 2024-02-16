@@ -36,6 +36,13 @@ def profile_message(username: str, birthday_date: datetime.date) -> str:
     return msg
 
 
+def all_users_admin_message(users: List[tables.User]):
+    message = "Список зарегистрированных пользователей:\n\n"
+    for count, user in enumerate(users, start=1):
+        message += f"{count}. <b>{user.user_name}</b> {datetime.strftime(user.birthday_date, '%d.%m.%Y')} @ссылка\n" # TODO вставить ссылку на пользователя
+    return message
+
+
 def help_message() -> str:
     msg = "Бот помогает вести учет событий и напоминать о них пользователям.\n\n" \
           "Использовать команды можно с помощью вкладки \"Меню\".\n\n" \

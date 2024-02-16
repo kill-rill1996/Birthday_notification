@@ -87,7 +87,7 @@ async def update_profile_confirmation_handler(message: types.Message, state: FSM
 async def confirm_delete_handler(callback: types.CallbackQuery):
     """Подтверждение удаления профиля"""
     if callback.data.split("_")[0] == "yes":
-        deleted_user = db.delete_user(callback.from_user.id)
+        deleted_user = db.delete_user_by_tg_id(callback.from_user.id)
         await callback.message.answer(f'Ваш профиль "{deleted_user.user_name}" удален')
     else:
         await callback.message.answer("Отмена удаления")

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime
@@ -68,10 +68,9 @@ def admins_keyboard():
     )
     keyboard.row(
         InlineKeyboardButton(
-            text="Удаление польз.", callback_data="admin_delete-user"),
+            text="Пользователи", callback_data="admin_users"),
         InlineKeyboardButton(
-            text="Удаление событий", callback_data="admin_delete-event"
-        )
+            text="Удаление польз.", callback_data="admin_delete-user"),
     )
     keyboard.row(
         InlineKeyboardButton(
@@ -106,3 +105,51 @@ def all_events_keyboard(events: List[tables.Event]):
     )
     return keyboard
 
+
+def all_users_keyboard(users: List[tables.User]):
+    """Клавиатура всех пользователей для администратора"""
+    keyboard = InlineKeyboardBuilder()
+    for count, user in enumerate(users, start=1):
+        if count % 2 == 1:
+            keyboard.row(
+                InlineKeyboardButton(
+                    text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
+                    callback_data=f"user_{user.id}"),
+            )
+        else:
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
+                    callback_data=f"user_{user.id}"),
+            )
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="<<Назад", callback_data="admin_back"
+        )
+    )
+    return keyboard
+
+
+def yes_no_admin_keyboard(param: Union[int, str]):
+    """Клавиатура для подтверждения действия от администратора"""
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Да", callback_data=f"yes_{param}"),
+        InlineKeyboardButton(
+            text="Нет", callback_data=f"no_{param}"
+        )
+    )
+    return keyboard
+
+
+def back_admin_keyboard():
+    """Клавиатура администратора для возвращения назад"""
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="<<Назад", callback_data="admin_back"
+        )
+    )
+    return keyboard
