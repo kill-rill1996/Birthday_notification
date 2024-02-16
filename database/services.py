@@ -1,8 +1,10 @@
 import datetime
 from typing import List
+from sqlalchemy.orm import joinedload
 
 from database import tables
 from .database import Session
+from events_changer import transform_birthdate_in_current_year
 
 
 def create_user(data: dict, tg_id: int):
@@ -21,14 +23,15 @@ def get_events_for_month(tg_id: int) -> List[tables.Event]:
 
 def get_all_events() -> List[tables.Event]:
     with Session() as session:
-        events = session.query(tables.Event).all()
+        events = session.query(tables.Event).options(joinedload(tables.Event.payers)).all()
         return events
 
 
-def create_event_and_payers(user_id: int) -> tables.Event:
+def create_event_and_payers(user_id: int, birthday_date: datetime) -> tables.Event:
     with Session() as session:
         # создаем событие
-        event = tables.Event(active=True, user_id=user_id)
+        event_date = transform_birthdate_in_current_year(birthday_date)
+        event = tables.Event(active=True, user_id=user_id, event_date=event_date)
         session.add(event)
         session.commit()
 
@@ -45,6 +48,20 @@ def get_all_users() -> List[tables.User]:
     with Session() as session:
         users = session.query(tables.User).all()
         return users
+
+
+def get_user_by_id(user_id: int) -> tables.User:
+    with Session() as session:
+        user = session.query(tables.User).filter(tables.User.id == user_id).first()
+        return user
+
+
+def delete_event(event_id: int) -> tables.Event:
+    with Session() as session:
+        event = session.query(tables.Event).filter_by(id=event_id).first()
+        session.delete(event)
+        session.commit()
+        return event
 
 
 def get_user_by_tg_id(tg_id: int) -> tables.User:

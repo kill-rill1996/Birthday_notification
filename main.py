@@ -6,8 +6,7 @@ from aiogram.enums import ParseMode
 from config import TOKEN
 from database.database import create_db
 from services.utils import set_commands
-from services.middlewares import CheckRegistrationMiddleware
-from services.routers import notifications, registration
+from services.routers import notifications, registration, administration
 from services.fsm_states import storage
 
 
@@ -18,12 +17,8 @@ async def init_bot() -> None:
     dp = Dispatcher(storage=storage)
     await set_commands(bot)
 
-    # middleware
-    # dp.message.middleware.register(CheckRegistrationMiddleware())
-    # notifications.router.message.middleware.register(CheckRegistrationMiddleware())
-
     # add routers
-    dp.include_routers(notifications.router, registration.router)
+    dp.include_routers(administration.router, registration.router, notifications.router)
 
     await dp.start_polling(bot)
 

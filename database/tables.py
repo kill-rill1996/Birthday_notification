@@ -24,6 +24,7 @@ class Event(Base):
     id = Column(Integer, primary_key=True)
     active = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
+    event_date = Column(Date)
 
     payers = relationship("Payer", backref="event", cascade="all,delete")
 

@@ -14,3 +14,6 @@ DB_PORT = os.getenv('POSTGRES_PORT')
 
 # callback query salt
 SALT = os.getenv("SALT")
+
+# admins tg_ids
+ADMINS = [int(admin) for admin in os.getenv('ADMINS').split(',')]
