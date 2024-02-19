@@ -56,5 +56,26 @@ def help_message() -> str:
           "/profile — просмотр ваших данных (имя пользователя и дата рождения, указанные при регистрации)\n" \
           "/update — изменение ваших данных\n" \
           "/delete — удаление пользователя\n" \
-          "/help — справка"
+          "/help — справка\n" \
+          "/admin — панель администратора"
+
     return msg
+
+
+def admin_event_info_message(event: tables.Event, event_user: tables.User, payer_users: List[tables.User]) -> str:
+    msg = f"<b>{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}</b>\n" \
+          f"Собранная сумма {event.summ} р.\n\n"
+    for idx, payer in enumerate(event.payers, start=1):
+        for user in payer_users:
+            if payer.user_id == user.id:
+                sub_msg = f"{idx}. {user.user_name}"
+                if payer.payment_status:
+                    sub_msg += " ✅ "
+                else:
+                    sub_msg += " ❌ "
+                sub_msg += f"сумма {payer.summ} р.\n"
+                msg += sub_msg
+
+    return msg.rstrip()
+
+

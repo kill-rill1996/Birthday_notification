@@ -101,3 +101,17 @@ def update_user_birthdate(tg_id: int, birthday_date: datetime.date):
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         user.birthday_date = birthday_date
         session.commit()
+
+
+def get_event_and_user_by_event_id(event_id: int):
+    with Session() as session:
+        event = session.query(tables.Event).options(joinedload(tables.Event.payers)).filter_by(id=event_id).first()
+
+        event_user = get_user_by_id(event.user_id)
+
+        payer_users = []
+        for payer in event.payers:
+            user = get_user_by_id(payer.user_id)
+            payer_users.append(user)
+
+        return event, event_user, payer_users

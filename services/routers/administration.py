@@ -9,8 +9,7 @@ import config
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
-from services.messages import all_users_admin_message
-
+from services.messages import all_users_admin_message, admin_event_info_message
 
 router = Router()
 router.message.middleware.register(CheckIsAdminMiddleware(config.ADMINS))
@@ -67,3 +66,11 @@ async def all_users(callback: types.CallbackQuery):
     users = db.get_all_users()
     msg = all_users_admin_message(users)
     await callback.message.answer(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+
+
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'event')
+async def event_info(callback: types.CallbackQuery):
+    event_id = int(callback.data.split('_')[1])
+    event, event_user, payer_users = db.get_event_and_user_by_event_id(event_id)
+    msg = admin_event_info_message(event, event_user, payer_users)
+    await callback.message.answer(msg, parse_mode=ParseMode.HTML)
