@@ -28,7 +28,7 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
                     for payer in event.payers:
                         if payer.user_id == user_id:
                             if payer.payment_status:
-                                msg += f"✅ Событие оплачено\n\n"
+                                msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
                             else:
                                 msg += f"❌ Событие не оплачено\n\n"
         msg.rstrip()
@@ -79,19 +79,26 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
     for idx, payer in enumerate(event.payers, start=1):
         for user in payer_users:
             if payer.user_id == user.id:
-                sub_msg = f"{idx}. {user.user_name}"
+                sub_msg = f"{idx}. <b>{user.user_name}</b>"
+
+                if user.tg_username:
+                    sub_msg += f" @{user.tg_username}"
+
                 if payer.payment_status:
                     sub_msg += " ✅ "
                 else:
                     sub_msg += " ❌ "
                     already_payers_count += 1
-                sub_msg += f"сумма {payer.summ} р.\n"
-                msg += sub_msg
+
+                if payer.summ:
+                    sub_msg += f"- <b>{payer.summ} р.</b>"
+
+                msg += f"\n{sub_msg}"
 
     if already_payers_count:
-        msg += "\nНиже указаны пользователи, которые не оплатили данное событие"
+        msg += "\n\nНиже указаны пользователи, которые не оплатили данное событие"
     else:
-        msg += "\nДанное событие оплатили все пользователи"
+        msg += "\n\nДанное событие оплатили все пользователи"
 
     return msg.rstrip()
 
