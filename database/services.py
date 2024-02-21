@@ -149,3 +149,10 @@ def add_payment(payer_id: int, amount: int):
         event = session.query(tables.Event).filter_by(id=payer.event_id).first()
         event.summ += amount
         session.commit()
+
+
+def get_event_from_payer_id(payer_id: int):
+    with Session() as session:
+        payer = session.query(tables.Payer).filter_by(id=payer_id).first()
+        event = session.query(tables.Event).filter_by(id=payer.event_id).first()
+        return event

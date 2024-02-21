@@ -172,14 +172,14 @@ def payer_info_admin_keyboard(event: tables.Event, payer_users: List[tables.User
 
     keyboard.row(InlineKeyboardButton(
             text="<<Назад",
-            callback_data="admin_back"
+            callback_data="admin_events"
         )
     )
 
     return keyboard
 
 
-def add_payment_admin_keyboard(payer_id: int):
+def add_payment_admin_keyboard(payer_id: int, event_id: int):
     """Клавиатура для добавления оплаты пользователем"""
     keyboard = InlineKeyboardBuilder()
 
@@ -190,7 +190,7 @@ def add_payment_admin_keyboard(payer_id: int):
 
     keyboard.row(InlineKeyboardButton(
             text="<<Назад",
-            callback_data="admin_back"
+            callback_data=f"event_{event_id}"
         )
     )
 

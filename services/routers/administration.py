@@ -82,9 +82,10 @@ async def event_info(callback: types.CallbackQuery):
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "admin-payer")
 async def event_payer_info(callback: types.CallbackQuery):
     payer_id = int(callback.data.split("_")[1])
+    event = db.get_event_from_payer_id(payer_id)
     user = db.get_user_by_payer_id(payer_id)
     msg = admin_event_payer_info_message(user)
-    await callback.message.answer(msg, reply_markup=kb.add_payment_admin_keyboard(payer_id).as_markup(), parse_mode=ParseMode.HTML)
+    await callback.message.answer(msg, reply_markup=kb.add_payment_admin_keyboard(payer_id, event.id).as_markup(), parse_mode=ParseMode.HTML)
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "add-pay")
@@ -101,12 +102,14 @@ async def get_pay(callback: types.CallbackQuery, state: FSMContext):
 async def confirm_payment(message: types.Message, state: FSMContext):
     data = await state.get_data()
     payer_id = data["payer_id"]
+    user = db.get_user_by_payer_id(payer_id)
 
     try:
         amount = int(message.text)
         db.add_payment(payer_id, amount)
-        msg = f"Оплата {amount} р зафиксирована"
-        await message.answer(msg, reply_markup=kb.admins_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+        msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
+        await message.answer(msg, parse_mode=ParseMode.HTML)
+        await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
         await state.clear()
 
     except ValueError:
