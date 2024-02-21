@@ -58,6 +58,10 @@ def is_less_then_31_days(birth_date: datetime) -> bool:
 
 
 def transform_birthdate_in_current_year(birth_date: datetime) -> datetime.date:
+    date_current_year = datetime.strptime(f"{birth_date.day}.{birth_date.month}.{datetime.now().date().year}", "%d.%m.%Y").date()
+    if birth_date.month == 12:
+        date_current_year += timedelta(days=31)
+
     return datetime.strptime(f"{birth_date.day}.{birth_date.month}.{datetime.now().date().year}", "%d.%m.%Y").date()
 
 

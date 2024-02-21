@@ -16,6 +16,15 @@ def create_user(data: dict, tg_id: int, tg_username: str):
         session.add(user)
         session.commit()
 
+        # добавление payer на ближайшие события, если пользователь зарегистрировался позже
+        # TODO надо ли создавать события если человек зарегистрировался за пару дней??
+        events = session.query(tables.Event).all()
+        if events:
+            for event in events:
+                payer = tables.Payer(payment_status=False, summ=0, user_id=user.id, event_id=event.id)
+                session.add(payer)
+                session.commit()
+
 
 def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], int):
     with Session() as session:
