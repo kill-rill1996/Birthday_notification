@@ -26,7 +26,8 @@ def get_events_for_month(tg_id: int) -> List[tables.Event]:
 
 def get_all_events() -> List[tables.Event]:
     with Session() as session:
-        events = session.query(tables.Event).options(joinedload(tables.Event.payers)).all()
+        events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
+            .order_by(tables.Event.event_date).all()
         return events
 
 
@@ -115,3 +116,22 @@ def get_event_and_user_by_event_id(event_id: int):
             payer_users.append(user)
 
         return event, event_user, payer_users
+
+
+def get_user_by_payer_id(payer_id: int):
+    with Session() as session:
+        payer = session.query(tables.Payer).filter_by(id=payer_id).first()
+        user = get_user_by_id(payer.user_id)
+
+        return user
+
+
+def add_payment(payer_id: int, amount: int):
+    with Session() as session:
+        payer = session.query(tables.Payer).filter_by(id=payer_id).first()
+        payer.summ = amount
+        payer.payment_status = True
+
+        event = session.query(tables.Event).filter_by(id=payer.event_id).first()
+        event.summ += amount
+        session.commit()

@@ -13,3 +13,7 @@ class FSMUserState(StatesGroup):
 class FsmUpdateUser(StatesGroup):
     new_username = State()
     new_birthday_date = State()
+
+
+class FSMGetPayment(StatesGroup):
+    amount = State()

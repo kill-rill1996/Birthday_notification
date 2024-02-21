@@ -153,3 +153,45 @@ def back_admin_keyboard():
         )
     )
     return keyboard
+
+
+def payer_info_admin_keyboard(event: tables.Event, payer_users: List[tables.User]):
+    """Клаивиатура администратора для просмотра оплаты конкретным пользователем"""
+    keyboard = InlineKeyboardBuilder()
+
+    for payer in event.payers:
+        for user in payer_users:
+            if payer.user_id == user.id:
+                if not payer.payment_status:
+                    keyboard.add(InlineKeyboardButton(
+                        text=f"{user.user_name}",
+                        callback_data=f"admin-payer_{payer.id}"
+                    ))
+
+    keyboard.adjust(2)
+
+    keyboard.row(InlineKeyboardButton(
+            text="<<Назад",
+            callback_data="admin_back"
+        )
+    )
+
+    return keyboard
+
+
+def add_payment_admin_keyboard(payer_id: int):
+    """Клавиатура для добавления оплаты пользователем"""
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.row(InlineKeyboardButton(
+        text="Внести оплату",
+        callback_data=f"add-pay_{payer_id}"
+    ))
+
+    keyboard.row(InlineKeyboardButton(
+            text="<<Назад",
+            callback_data="admin_back"
+        )
+    )
+
+    return keyboard

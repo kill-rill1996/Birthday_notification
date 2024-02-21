@@ -64,7 +64,10 @@ def help_message() -> str:
 
 def admin_event_info_message(event: tables.Event, event_user: tables.User, payer_users: List[tables.User]) -> str:
     msg = f"<b>{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}</b>\n" \
-          f"Собранная сумма {event.summ} р.\n\n"
+          f"Собранная сумма <b>{event.summ} р.</b>\n\n"
+
+    already_payers_count = 0
+
     for idx, payer in enumerate(event.payers, start=1):
         for user in payer_users:
             if payer.user_id == user.id:
@@ -73,9 +76,20 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
                     sub_msg += " ✅ "
                 else:
                     sub_msg += " ❌ "
+                    already_payers_count += 1
                 sub_msg += f"сумма {payer.summ} р.\n"
                 msg += sub_msg
 
+    if already_payers_count:
+        msg += "\nНиже указаны пользователи, которые не оплатили данное событие"
+    else:
+        msg += "\nДанное событие оплатили все пользователи"
+
     return msg.rstrip()
 
+
+def admin_event_payer_info_message(user: tables.User) -> str:
+    msg = f"Пользователь <b>{user.user_name}</b> еще не оплатил событие\n\n"
+
+    return msg
 

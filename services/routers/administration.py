@@ -3,13 +3,15 @@ from typing import Union
 
 from aiogram import Router, types
 from aiogram.enums import ParseMode
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
 
 import config
+from services.fsm_states import FSMGetPayment
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
-from services.messages import all_users_admin_message, admin_event_info_message
+from services.messages import all_users_admin_message, admin_event_info_message, admin_event_payer_info_message
 
 router = Router()
 router.message.middleware.register(CheckIsAdminMiddleware(config.ADMINS))
@@ -73,4 +75,48 @@ async def event_info(callback: types.CallbackQuery):
     event_id = int(callback.data.split('_')[1])
     event, event_user, payer_users = db.get_event_and_user_by_event_id(event_id)
     msg = admin_event_info_message(event, event_user, payer_users)
-    await callback.message.answer(msg, parse_mode=ParseMode.HTML)
+    markup = kb.payer_info_admin_keyboard(event, payer_users)
+    await callback.message.answer(msg, reply_markup=markup.as_markup(), parse_mode=ParseMode.HTML)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "admin-payer")
+async def event_payer_info(callback: types.CallbackQuery):
+    payer_id = int(callback.data.split("_")[1])
+    user = db.get_user_by_payer_id(payer_id)
+    msg = admin_event_payer_info_message(user)
+    await callback.message.answer(msg, reply_markup=kb.add_payment_admin_keyboard(payer_id).as_markup(), parse_mode=ParseMode.HTML)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "add-pay")
+async def get_pay(callback: types.CallbackQuery, state: FSMContext):
+    payer_id = callback.data.split("_")[1]
+
+    await state.set_state(FSMGetPayment.amount)
+    await state.update_data(payer_id=payer_id)
+    msg = "Укажите сумму, которую внес пользователь"
+    await callback.message.answer(msg, reply_markup=kb.cancel_inline_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+
+
+@router.message(FSMGetPayment.amount)
+async def confirm_payment(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    payer_id = data["payer_id"]
+
+    try:
+        amount = int(message.text)
+        db.add_payment(payer_id, amount)
+        msg = f"Оплата {amount} р зафиксирована"
+        await message.answer(msg, reply_markup=kb.admins_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+        await state.clear()
+
+    except ValueError:
+        await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
+
+
+@router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
+async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.answer("Действие отменено")
+    await callback.message.delete()
+
+
