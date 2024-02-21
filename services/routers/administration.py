@@ -30,6 +30,7 @@ async def admin_panel_handler(message: Union[types.Message, types.CallbackQuery]
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'events')
 async def events_handler(callback: types.CallbackQuery):
+    """Вывод списка актуальных событий для администратора"""
     events = db.get_all_events()
     msg = "Список всех активных событий:"
     if not events:
@@ -72,6 +73,7 @@ async def all_users(callback: types.CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'event')
 async def event_info(callback: types.CallbackQuery):
+    """Информация о конкретном событии с указанием оплат"""
     event_id = int(callback.data.split('_')[1])
     event, event_user, payer_users = db.get_event_and_user_by_event_id(event_id)
     msg = admin_event_info_message(event, event_user, payer_users)
@@ -81,6 +83,7 @@ async def event_info(callback: types.CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "admin-payer")
 async def event_payer_info(callback: types.CallbackQuery):
+    """После выбора пользователя для опплаты, предложение внести оплату"""
     payer_id = int(callback.data.split("_")[1])
     event = db.get_event_from_payer_id(payer_id)
     user = db.get_user_by_payer_id(payer_id)
@@ -90,6 +93,7 @@ async def event_payer_info(callback: types.CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "add-pay")
 async def get_pay(callback: types.CallbackQuery, state: FSMContext):
+    """Запрос в FSM суммы оплаты. Начало FSM"""
     payer_id = callback.data.split("_")[1]
 
     await state.set_state(FSMGetPayment.amount)
@@ -100,6 +104,7 @@ async def get_pay(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(FSMGetPayment.amount)
 async def confirm_payment(message: types.Message, state: FSMContext):
+    """Фиксирование оплаты в бд. Окончание FSM по оплате пользователем события"""
     data = await state.get_data()
     payer_id = data["payer_id"]
     user = db.get_user_by_payer_id(payer_id)
@@ -118,6 +123,7 @@ async def confirm_payment(message: types.Message, state: FSMContext):
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
+    """Отмена всех FSM и удаление последнего сообщения"""
     await state.clear()
     await callback.message.answer("Действие отменено")
     await callback.message.delete()

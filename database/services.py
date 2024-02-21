@@ -7,7 +7,8 @@ from .database import Session
 from events_changer import transform_birthdate_in_current_year
 
 
-def create_user(data: dict, tg_id: int, tg_username: str):
+def create_user(data: dict, tg_id: int, tg_username: str) -> None:
+    """Создание пользователя и его payers на все существующие события"""
     with Session() as session:
         user = tables.User(user_name=data["user_name"],
                            telegram_id=tg_id,
@@ -27,6 +28,8 @@ def create_user(data: dict, tg_id: int, tg_username: str):
 
 
 def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], int):
+    """Получение событий на ближайший месяц с payers,
+    users, которые должны оплатить событие, и user id у которого событие"""
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
         events_with_payers = session.query(tables.Event).filter(tables.Event.user_id != user.id)\
@@ -39,6 +42,7 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
 
 
 def get_all_events() -> List[tables.Event]:
+    """Получение всех событий"""
     with Session() as session:
         events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
             .order_by(tables.Event.event_date).all()
@@ -46,6 +50,7 @@ def get_all_events() -> List[tables.Event]:
 
 
 def create_event_and_payers(user_id: int, birthday_date: datetime) -> tables.Event:
+    """Создание event и payers для этого ивента"""
     with Session() as session:
         # создаем событие
         event_date = transform_birthdate_in_current_year(birthday_date)
@@ -63,18 +68,21 @@ def create_event_and_payers(user_id: int, birthday_date: datetime) -> tables.Eve
 
 
 def get_all_users() -> List[tables.User]:
+    """Получение всех пользователей"""
     with Session() as session:
         users = session.query(tables.User).all()
         return users
 
 
 def get_user_by_id(user_id: int) -> tables.User:
+    """Получению пользователя по user id"""
     with Session() as session:
         user = session.query(tables.User).filter(tables.User.id == user_id).first()
         return user
 
 
 def delete_event(event_id: int) -> tables.Event:
+    """Удаление события с помощью event id"""
     with Session() as session:
         event = session.query(tables.Event).filter_by(id=event_id).first()
         session.delete(event)
@@ -83,12 +91,14 @@ def delete_event(event_id: int) -> tables.Event:
 
 
 def get_user_by_tg_id(tg_id: int) -> tables.User:
+    """Получение пользователя с помощью telegram_id"""
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         return user
 
 
 def delete_user_by_tg_id(tg_id: int) -> tables.User:
+    """Удаление пользователя с помощью telegram_id"""
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         session.delete(user)
@@ -97,6 +107,7 @@ def delete_user_by_tg_id(tg_id: int) -> tables.User:
 
 
 def delete_user_by_id(user_id: int) -> tables.User:
+    """Удаление пользователя с помощью id"""
     with Session() as session:
         user = session.query(tables.User).filter_by(id=user_id).first()
         session.delete(user)
@@ -104,21 +115,24 @@ def delete_user_by_id(user_id: int) -> tables.User:
         return user
 
 
-def update_user_username(tg_id: int, username: str):
+def update_user_username(tg_id: int, username: str) -> None:
+    """Изменение имени пользователя"""
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         user.user_name = username
         session.commit()
 
 
-def update_user_birthdate(tg_id: int, birthday_date: datetime.date):
+def update_user_birthdate(tg_id: int, birthday_date: datetime.date) -> None:
+    """Изменение дня рождения"""
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
         user.birthday_date = birthday_date
         session.commit()
 
 
-def get_event_and_user_by_event_id(event_id: int):
+def get_event_and_user_by_event_id(event_id: int) -> (tables.Event, List[tables.User], List[tables.User]):
+    """Получение event, пользователя у которого событие и список user, которые должны оплатить через payer id"""
     with Session() as session:
         event = session.query(tables.Event).options(joinedload(tables.Event.payers)).filter_by(id=event_id).first()
 
@@ -132,7 +146,8 @@ def get_event_and_user_by_event_id(event_id: int):
         return event, event_user, payer_users
 
 
-def get_user_by_payer_id(payer_id: int):
+def get_user_by_payer_id(payer_id: int) -> tables.User:
+    """Получение user через payer id"""
     with Session() as session:
         payer = session.query(tables.Payer).filter_by(id=payer_id).first()
         user = get_user_by_id(payer.user_id)
@@ -140,7 +155,8 @@ def get_user_by_payer_id(payer_id: int):
         return user
 
 
-def add_payment(payer_id: int, amount: int):
+def add_payment(payer_id: int, amount: int) -> None:
+    """Добавление оплаты в payer и суммы оплат в event"""
     with Session() as session:
         payer = session.query(tables.Payer).filter_by(id=payer_id).first()
         payer.summ = amount
@@ -151,7 +167,8 @@ def add_payment(payer_id: int, amount: int):
         session.commit()
 
 
-def get_event_from_payer_id(payer_id: int):
+def get_event_from_payer_id(payer_id: int) -> tables.Event:
+    """Получение event через payer id"""
     with Session() as session:
         payer = session.query(tables.Payer).filter_by(id=payer_id).first()
         event = session.query(tables.Event).filter_by(id=payer.event_id).first()
