@@ -17,11 +17,16 @@ def create_user(data: dict, tg_id: int, tg_username: str):
         session.commit()
 
 
-def get_events_for_month(tg_id: int) -> List[tables.Event]:
+def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], int):
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
-        events = session.query(tables.Event).filter(tables.Event.user_id != user.id).all()
-        return events
+        events_with_payers = session.query(tables.Event).filter(tables.Event.user_id != user.id)\
+            .options(joinedload(tables.Event.payers)).all()
+
+        event_users = []
+        for event in events_with_payers:
+            event_users.append(get_user_by_id(event.user_id))
+        return events_with_payers, event_users, user.id
 
 
 def get_all_events() -> List[tables.Event]:
