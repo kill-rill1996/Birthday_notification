@@ -3,7 +3,7 @@ from datetime import date, datetime
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
-from services.errors import DateValidationError
+from services.errors import DateValidationError, DatePeriodError
 
 
 def parse_birthday_date(message: str) -> datetime.date:
@@ -12,6 +12,17 @@ def parse_birthday_date(message: str) -> datetime.date:
         result = datetime.strptime(message, "%d.%m.%Y").date()
         if result.year > datetime.now().year:
             raise DateValidationError
+    except Exception:
+        raise DateValidationError
+    return result
+
+
+def check_validation_date(message: str) -> datetime.date:
+    """Проверяет валидность даты для добавляемых событий"""
+    try:
+        result = datetime.strptime(message, "%d.%m.%Y").date()
+        if result.year > datetime.now().year + 1 or result.year < datetime.now().year:
+            raise DatePeriodError
     except Exception:
         raise DateValidationError
     return result

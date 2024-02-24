@@ -7,6 +7,8 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 import config
+from services.errors import DateValidationError, DatePeriodError
+from services.utils import parse_birthday_date, check_validation_date
 from services.fsm_states import FSMGetPayment, FSMAddEvent
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
@@ -134,11 +136,56 @@ async def create_new_event(callback: types.CallbackQuery, state: FSMContext):
     """Начало создания события. Начало FSM (если не др)"""
     if callback.data.split('_')[1] == 'other':
         await state.set_state(FSMAddEvent.title)
-        await callback.message.answer('Введите название события (например "корпоратив")')
+        await callback.message.answer('Введите название события (например "корпоратив")',
+                                      reply_markup=kb.cancel_inline_keyboard().as_markup())
     else:
         users = db.get_all_users()
         await callback.message.answer('Выберите пользователя, чей день рождения хотите добавить в ближайшие события',
                                       reply_markup=kb.all_users_keyboard_for_event_creating(users).as_markup())
+
+
+@router.message(FSMAddEvent.title)
+async def create_title_new_event(message: types.Message, state: FSMContext):
+    """Создание названия события и переход на state event_date"""
+    await state.update_data(title=message.text)
+    await state.set_state(FSMAddEvent.event_date)
+    await message.answer("Введите дату события в формате <b>ДД.ММ.ГГГГ</b>",
+                         parse_mode=ParseMode.HTML, reply_markup=kb.cancel_inline_keyboard().as_markup())
+
+
+@router.message(FSMAddEvent.event_date)
+async def create_event_date_new_event(message: types.Message, state: FSMContext):
+    try:
+        event_date_parsed = check_validation_date(message.text)
+        await state.update_data(event_date=event_date_parsed)
+        await state.set_state(FSMAddEvent.except_user)
+
+        users = db.get_all_users()
+        await message.answer(f"Выберите кто из пользователей <b>НЕ</b> должен знать о событии:",
+                             reply_markup=kb.all_users_keyboard_for_except_from_event(users).as_markup(),
+                             parse_mode=ParseMode.HTML)
+    except DateValidationError:
+        await message.answer(f"Неверный формат даты. Попробуйте еще раз")
+    except DatePeriodError:
+        await message.answer(f"Неверно указан год события (допускается текущий год и следующий). Попробуйте еще раз")
+
+
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event-except',
+                       FSMAddEvent.except_user)
+async def create_event_excepting_user(callback: types.CallbackQuery, state: FSMContext):
+    user_id = callback.data.split("_")[1]
+    if user_id == "all":
+        await state.update_data(except_user=None)
+    else:
+        await state.update_data(except_user=int(user_id))
+    data = await state.get_data()
+
+    db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'], title=data['title'])
+
+    await callback.message.answer(f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
+                                  parse_mode=ParseMode.HTML)
+    await callback.message.delete()
+    await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event')
@@ -150,7 +197,7 @@ async def create_new_event(callback: types.CallbackQuery):
         db.create_event_and_payers(user.id, user.birthday_date)
         msg = admin_successful_create_event_birthday(user)
     else:
-        msg = f"Ошибка. Событие дня рождения пользователя {user.user_name} уже существует!"
+        msg = f'<b>Ошибка</b>. Событие "День рождения пользователя {user.user_name}" уже существует!'
     await callback.message.answer(msg, parse_mode=ParseMode.HTML)
 
 

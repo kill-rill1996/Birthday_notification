@@ -28,7 +28,6 @@ def create_user(data: dict, tg_id: int, tg_username: str) -> None:
         # TODO надо ли создавать события если человек зарегистрировался за пару дней??
 
 
-
 def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], int):
     """Получение событий на ближайший месяц с payers,
     users, которые должны оплатить событие, и user id у которого событие"""
@@ -39,7 +38,7 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
 
         event_users = []
         for event in events_with_payers:
-            event_users.append(get_user_by_id(event.user_id))
+            event_users.append(get_user_by_id(event.user_id)) #TODO добавить не ДР
         return events_with_payers, event_users, user.id
 
 
@@ -59,21 +58,31 @@ def get_all_events_birthday() -> List[tables.Event]:
         return events
 
 
-def create_event_and_payers(user_id: int, birthday_date: datetime) -> tables.Event:
+def create_event_and_payers(user_id: int | None, birthday_date: datetime, title: str = "birthday") -> tables.Event:
     """Создание event и payers для этого ивента"""
     with Session() as session:
         # создаем событие
-        event_date = transform_birthdate_in_current_year(birthday_date)
-        event = tables.Event(active=True, user_id=user_id, event_date=event_date)
+        if title == "birthday":
+            event_date = transform_birthdate_in_current_year(birthday_date)
+        else:
+            event_date = birthday_date
+        event = tables.Event(active=True, user_id=user_id, event_date=event_date, title=title)
         session.add(event)
         session.commit()
 
         # создаем плательщиков
-        users = session.query(tables.User).filter(tables.User.id != user_id).all()
+        if user_id:
+            # пользователи за исключением именинника
+            users = session.query(tables.User).filter(tables.User.id != user_id).all()
+        else:
+            # все пользователи если именинник не указан
+            users = session.query(tables.User).all()
+
         for user in users:
             payer = tables.Payer(payment_status=False, summ=0, user_id=user.id, event_id=event.id)
             session.add(payer)
             session.commit()
+
         return event
 
 

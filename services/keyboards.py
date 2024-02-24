@@ -6,7 +6,6 @@ from datetime import datetime
 from database import services as db, tables
 
 
-
 def create_user_key_board():
     """Клавиатура для старта создания профиля"""
     keyboard = InlineKeyboardBuilder()
@@ -226,6 +225,29 @@ def all_users_keyboard_for_event_creating(users: List[tables.User]):
     keyboard.row(
         InlineKeyboardButton(
             text="<<Назад", callback_data="admin_add-event"
+        )
+    )
+    return keyboard
+
+
+def all_users_keyboard_for_except_from_event(users: List[tables.User]):
+    """Клавиатура для исключения пользователя из события"""
+    keyboard = InlineKeyboardBuilder()
+    for user in users:
+        keyboard.row(
+            InlineKeyboardButton(
+                text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
+                callback_data=f"user-event-except_{user.id}"),
+        )
+    keyboard.adjust(2)
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Учесть всех", callback_data="user-event-except_all"
+        )
+    )
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Отмена", callback_data="something_cancel"
         )
     )
     return keyboard
