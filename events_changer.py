@@ -48,11 +48,18 @@ def check_days_count_before_event(event_date: datetime) -> datetime.date:
 
 def is_less_then_31_days(birth_date: datetime) -> bool:
     today_date = datetime.now().date()
+
     # составляем дату дня рождения в текущем году
-    birthday_date_in_this_year = transform_birthdate_in_current_year(birth_date) # TODO cделать проверку для перехода на след год
+    birthday_date_in_this_year = transform_birthdate_in_current_year(birth_date)
+
     # проверяем ближе она чем 30 дней или нет
     if birthday_date_in_this_year > today_date and birthday_date_in_this_year < today_date + timedelta(days=31):
         return True
+
+    # проверяем др в январе след. года
+    elif birthday_date_in_this_year.month == 1 and today_date.month == 12:
+        if birthday_date_in_this_year + timedelta(days=365) < today_date + timedelta(days=31):
+            return True
 
     return False
 
@@ -61,7 +68,6 @@ def transform_birthdate_in_current_year(birth_date: datetime) -> datetime.date:
     date_current_year = datetime.strptime(f"{birth_date.day}.{birth_date.month}.{datetime.now().date().year}", "%d.%m.%Y").date()
     if birth_date.month == 12:
         date_current_year += timedelta(days=31)
-
     return datetime.strptime(f"{birth_date.day}.{birth_date.month}.{datetime.now().date().year}", "%d.%m.%Y").date()
 
 
