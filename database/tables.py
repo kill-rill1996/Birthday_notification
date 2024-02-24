@@ -22,8 +22,9 @@ class Event(Base):
     __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True)
-    active = Column(Boolean, default=False) # TODO возможно исправить на флаг (др или что-то иное)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True) # TODO исправить nullable на True для возможности добавления осбытий не связанных с др (например корпоратив, праздник ...)
+    title = Column(String, default='birthday')
+    active = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True, unique=False)
     event_date = Column(Date)
     summ = Column(Integer, default=0)
 

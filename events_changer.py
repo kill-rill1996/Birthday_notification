@@ -5,6 +5,7 @@ from database import services as db
 
 
 def main():
+    """Работает по crone раз в день"""
     # поверяем актуальность существующих событий и удаляем прошедшие
     events = db.get_all_events()
     for event in events:
@@ -14,30 +15,18 @@ def main():
 
     # добавляем новые события и плательщиков в table Payers
     users = db.get_all_users()
+    events_birthday = db.get_all_events_birthday()
+    user_ids_with_birthday = [event.user_id for event in events_birthday]
     for user in users:
-        if is_less_then_31_days(user.birthday_date):
-            # create new event and payers
-            # обработка ошибки по дубликатам
-            try:
+        # проверяем есть ли уже событие этого пользователя с тэгом birthday
+        if events:
+            if user.id not in user_ids_with_birthday and is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)
                 print("Создано новое событие")
-            except IntegrityError:
-                print("Событие уже есть в базе данных")
-
-    # рассылаем напоминания о текущих событиях если необходимо
-    update_events = db.get_all_events()
-    for event in update_events:
-        days_before = check_days_count_before_event(event.event_date)
-        if days_before:
-            pass
-        elif days_before == 10:
-            pass
-        elif days_before == 5:
-            pass
-        elif days_before == 1:
-            pass
-        elif days_before == 0:
-            pass
+        else:
+            if is_less_then_31_days(user.birthday_date):
+                db.create_event_and_payers(user.id, user.birthday_date)
+                print("Создано новое событие")
 
 
 def check_days_count_before_event(event_date: datetime) -> datetime.date:

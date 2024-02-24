@@ -7,11 +7,11 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 import config
-from services.fsm_states import FSMGetPayment
+from services.fsm_states import FSMGetPayment, FSMAddEvent
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
-from services.messages import all_users_admin_message, admin_event_info_message, admin_event_payer_info_message
+from services.messages import all_users_admin_message, admin_event_info_message, admin_event_payer_info_message, admin_successful_create_event_birthday
 
 router = Router()
 router.message.middleware.register(CheckIsAdminMiddleware(config.ADMINS))
@@ -41,10 +41,10 @@ async def events_handler(callback: types.CallbackQuery):
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'delete-user')
 async def delete_users_panel(callback: types.CallbackQuery):
     all_users = db.get_all_users()
-    await callback.message.answer("Список всех пользователей:", reply_markup=kb.all_users_keyboard(all_users).as_markup())
+    await callback.message.answer("Выберите пользователя, которого хотите удалить:", reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
 
 
-@router.callback_query(lambda callback: callback.data.split('_')[0] == 'user')
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-delete')
 async def delete_user(callback: types.CallbackQuery):
     """Удаление пользователя через панель администратора"""
     user_for_delete = db.get_user_by_id(int(callback.data.split('_')[1]))
@@ -52,10 +52,12 @@ async def delete_user(callback: types.CallbackQuery):
     await callback.message.answer(msg, reply_markup=kb.yes_no_admin_keyboard(user_for_delete.id).as_markup(), parse_mode=ParseMode.HTML)
 
 
-@router.callback_query(lambda callback: callback.data.split('_')[0] in ['yes', 'no'])
+@router.callback_query(lambda callback: (callback.data.split('_')[0] in ['yes', 'no']) and
+                                        (callback.data.split('_')[1] != "delete"))
 async def confirm_delete_user(callback: types.CallbackQuery):
     """Подтверждение удаления пользователя от администратора"""
     if callback.data.split("_")[0] == "yes":
+        print(callback.data.split('_')[1])
         deleted_user = db.delete_user_by_id(int(callback.data.split('_')[1]))
         await callback.message.answer(f'Пользователь <b>"{deleted_user.user_name}"</b> удален', parse_mode=ParseMode.HTML)
     else:
@@ -121,11 +123,40 @@ async def confirm_payment(message: types.Message, state: FSMContext):
         await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
+@router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')
+async def create_new_event_panel(callback: types.CallbackQuery):
+    """Создание события через клавиатуру администратора"""
+    await callback.message.answer("Выберите тип события, которое хотите добавить", reply_markup=kb.add_event_admin_keyboard().as_markup())
+
+
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'add-event')
+async def create_new_event(callback: types.CallbackQuery, state: FSMContext):
+    """Начало создания события. Начало FSM (если не др)"""
+    if callback.data.split('_')[1] == 'other':
+        await state.set_state(FSMAddEvent.title)
+        await callback.message.answer('Введите название события (например "корпоратив")')
+    else:
+        users = db.get_all_users()
+        await callback.message.answer('Выберите пользователя, чей день рождения хотите добавить в ближайшие события',
+                                      reply_markup=kb.all_users_keyboard_for_event_creating(users).as_markup())
+
+
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event')
+async def create_new_event(callback: types.CallbackQuery):
+    """Создание события дня рождения для пользователя через панель администратора"""
+    user = db.get_user_by_id(int(callback.data.split("_")[1]))
+    events = db.get_all_events_birthday()
+    if user.id not in [event.user_id for event in events]:
+        db.create_event_and_payers(user.id, user.birthday_date)
+        msg = admin_successful_create_event_birthday(user)
+    else:
+        msg = f"Ошибка. Событие дня рождения пользователя {user.user_name} уже существует!"
+    await callback.message.answer(msg, parse_mode=ParseMode.HTML)
+
+
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     """Отмена всех FSM и удаление последнего сообщения"""
     await state.clear()
     await callback.message.answer("Действие отменено")
     await callback.message.delete()
-
-

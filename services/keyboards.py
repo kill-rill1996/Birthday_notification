@@ -72,11 +72,11 @@ def admins_keyboard():
         InlineKeyboardButton(
             text="Удаление польз.", callback_data="admin_delete-user"),
     )
-    keyboard.row(
-        InlineKeyboardButton(
-            text="Отмена", callback_data="something_cancel"
-        )
-    )
+    # keyboard.row(
+    #     InlineKeyboardButton(
+    #         text="Отмена", callback_data="something_cancel"
+    #     )
+    # )
     return keyboard
 
 
@@ -106,22 +106,16 @@ def all_events_keyboard(events: List[tables.Event]):
     return keyboard
 
 
-def all_users_keyboard(users: List[tables.User]):
+def all_users_keyboard_to_delete(users: List[tables.User]):
     """Клавиатура всех пользователей для администратора"""
     keyboard = InlineKeyboardBuilder()
-    for count, user in enumerate(users, start=1):
-        if count % 2 == 1:
-            keyboard.row(
-                InlineKeyboardButton(
-                    text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
-                    callback_data=f"user_{user.id}"),
-            )
-        else:
-            keyboard.add(
-                InlineKeyboardButton(
-                    text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
-                    callback_data=f"user_{user.id}"),
-            )
+    for user in users:
+        keyboard.row(
+            InlineKeyboardButton(
+                text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
+                callback_data=f"user-delete_{user.id}"),
+        )
+    keyboard.adjust(2)
 
     keyboard.row(
         InlineKeyboardButton(
@@ -193,5 +187,45 @@ def add_payment_admin_keyboard(payer_id: int, event_id: int):
             callback_data=f"event_{event_id}"
         )
     )
+    return keyboard
 
+
+def add_event_admin_keyboard():
+    """Клавиатура для создания событий от лица администратора"""
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="День рождения",
+            callback_data=f"add-event_birthday"
+        ),
+        InlineKeyboardButton(
+            text="Другое",
+            callback_data=f"add-event_other"
+        )
+    )
+
+    keyboard.row(InlineKeyboardButton(
+            text="<<Назад",
+            callback_data="admin_back"
+        )
+    )
+    return keyboard
+
+
+def all_users_keyboard_for_event_creating(users: List[tables.User]):
+    """Клавиатура всех пользователей для создания события"""
+    keyboard = InlineKeyboardBuilder()
+    for user in users:
+        keyboard.row(
+            InlineKeyboardButton(
+                text=f"{user.user_name} {datetime.strftime(user.birthday_date, '%d.%m.%Y')} ",
+                callback_data=f"user-event_{user.id}"),
+        )
+    keyboard.adjust(2)
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="<<Назад", callback_data="admin_add-event"
+        )
+    )
     return keyboard

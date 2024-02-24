@@ -18,13 +18,15 @@ def create_user(data: dict, tg_id: int, tg_username: str) -> None:
         session.commit()
 
         # добавление payer на ближайшие события, если пользователь зарегистрировался позже
-        # TODO надо ли создавать события если человек зарегистрировался за пару дней??
         events = session.query(tables.Event).all()
         if events:
             for event in events:
                 payer = tables.Payer(payment_status=False, summ=0, user_id=user.id, event_id=event.id)
                 session.add(payer)
                 session.commit()
+
+        # TODO надо ли создавать события если человек зарегистрировался за пару дней??
+
 
 
 def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], int):
@@ -45,6 +47,14 @@ def get_all_events() -> List[tables.Event]:
     """Получение всех событий"""
     with Session() as session:
         events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
+            .order_by(tables.Event.event_date).all()
+        return events
+
+
+def get_all_events_birthday() -> List[tables.Event]:
+    """Получение всех событий с title birthday"""
+    with Session() as session:
+        events = session.query(tables.Event).filter(tables.Event.title == "birthday").options(joinedload(tables.Event.payers))\
             .order_by(tables.Event.event_date).all()
         return events
 

@@ -108,3 +108,9 @@ def admin_event_payer_info_message(user: tables.User) -> str:
 
     return msg
 
+
+def admin_successful_create_event_birthday(user: tables.User) -> str:
+    """Сообщение об успешном создании администратором внепланового ДР"""
+    msg = f'Событие "День рождения <b>{user.user_name} {datetime.strftime(user.birthday_date, "%d.%m.%Y")}</b>" успешно создано!'
+    return msg
+

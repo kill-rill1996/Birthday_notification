@@ -17,3 +17,9 @@ class FsmUpdateUser(StatesGroup):
 
 class FSMGetPayment(StatesGroup):
     amount = State()
+
+
+class FSMAddEvent(StatesGroup):
+    title = State()
+    event_date = State()
+    except_user = State()
