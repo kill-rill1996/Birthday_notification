@@ -69,7 +69,7 @@ def admins_keyboard():
         InlineKeyboardButton(
             text="Пользователи", callback_data="admin_users"),
         InlineKeyboardButton(
-            text="Удаление польз.", callback_data="admin_delete-user"),
+            text="Удалить польз.", callback_data="admin_delete-user"),
     )
     # keyboard.row(
     #     InlineKeyboardButton(
