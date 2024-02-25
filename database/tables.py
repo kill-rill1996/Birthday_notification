@@ -23,7 +23,7 @@ class Event(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, default='birthday')
-    active = Column(Boolean, default=False)
+    active = Column(Boolean, default=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=True, unique=False)
     event_date = Column(Date)
     summ = Column(Integer, default=0)
