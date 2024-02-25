@@ -77,7 +77,7 @@ def admins_keyboard():
             text="Удалить событие", callback_data="admin_delete-event"
         ),
         InlineKeyboardButton(
-            text="Оповестить пользователей", callback_data="admin_ping"),
+            text="Оповещения", callback_data="admin_ping"),
     )
     return keyboard
 
@@ -295,6 +295,40 @@ def all_events_keyboard_to_delete(events: List[tables.Event]):
     keyboard.row(
         InlineKeyboardButton(
             text="<<Назад", callback_data="something_cancel"
+        )
+    )
+    return keyboard
+
+
+def all_events_to_ping_keyboard(events: List[tables.Event]):
+    """Клавиатура администратора со всеми событиями для оповещения"""
+    keyboard = InlineKeyboardBuilder()
+
+    for event in events:
+        if event.title == "birthday":
+            event_user = db.get_user_by_id(event.user_id)
+            keyboard.row(
+                InlineKeyboardButton(
+                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}",
+                    callback_data=f"ping_{event.id}"),
+            )
+        else:
+            keyboard.row(
+                InlineKeyboardButton(
+                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event.title}",
+                    callback_data=f"ping_{event.id}"),
+            )
+    keyboard.adjust(2)
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Обо всех", callback_data="ping_all"
+        )
+    )
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="<<Назад", callback_data="admin_back"
         )
     )
     return keyboard

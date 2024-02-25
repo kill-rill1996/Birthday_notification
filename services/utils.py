@@ -1,8 +1,10 @@
 from datetime import date, datetime
+from typing import List
 
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
+from database.tables import Event
 from services.errors import DateValidationError, DatePeriodError
 
 

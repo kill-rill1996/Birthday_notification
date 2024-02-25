@@ -204,9 +204,24 @@ def get_event_by_event_id(event_id: int) -> tables.Event:
         return event
 
 
-def get_all_users_exclude_admin(tg_user_id: int) -> List[tables.User]:
-    """Получение всех пользователей кроме админа для оповещения о событиях"""
+def get_all_users_and_events_exclude_admin(tg_id: int) -> (List[tables.User], List[tables.Event]):
+    """Получение всех пользователей кроме админа и событий для оповещения о событиях"""
     with Session() as session:
-        user = get_user_by_tg_id(tg_user_id)
-        users = session.query(tables.User).filter(tables.User.id != user.id).all()
+        users = session.query(tables.User).filter(tables.User.telegram_id != tg_id).all()
+        events = session.query(tables.Event).all()
+        return users, events
+
+
+def get_all_users_without_admin(tg_id: int) -> List[tables.User]:
+    """Получение списка пользователей без админа для клавиатуры оповещения"""
+    with Session() as session:
+        users = session.query(tables.User).filter(tables.User.telegram_id != tg_id).all()
         return users
+
+
+def get_event_with_payer(event_id: int) -> tables.Event:
+    """Получение event с payers через event_id"""
+    with Session() as session:
+        event = session.query(tables.Event).filter_by(id=event_id).order_by(tables.Event.event_date)\
+            .options(joinedload(tables.Event.payers)).first()
+        return event

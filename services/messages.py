@@ -133,3 +133,9 @@ def admin_event_delete_confirmation(event: tables.Event) -> str:
     """Сообщение о подтверждении удаления события"""
     msg = f'Вы действительно хотите удалить это событие <b>{event.title if event.title != "birthday" else "День рождения"} {datetime.strftime(event.event_date, "%d.%m.%Y")}</b>?'
     return msg
+
+
+def ping_user(user: tables.User, events_with_payers: List[tables.Event] | tables.Event) -> str:
+    """Сообщение пользователям о ближайщих событиях"""
+    pass
+
