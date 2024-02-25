@@ -226,3 +226,11 @@ def get_event_by_event_id(event_id: int) -> tables.Event:
     with Session() as session:
         event = session.query(tables.Event).filter_by(id=event_id).first()
         return event
+
+
+def get_all_users_exclude_admin(tg_user_id: int) -> List[tables.User]:
+    """Получение всех пользователей кроме админа для оповещения о событиях"""
+    with Session() as session:
+        user = get_user_by_tg_id(tg_user_id)
+        users = session.query(tables.User).filter(tables.User.id != user.id).all()
+        return users

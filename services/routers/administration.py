@@ -241,6 +241,14 @@ async def create_new_event(callback: types.CallbackQuery):
     await callback.message.answer(msg, parse_mode=ParseMode.HTML)
 
 
+@router.callback_query(lambda callback: callback.data.split("_")[1] == "ping")
+async def notify_users(callback: types.CallbackQuery):
+    """Оповещение всех пользователей о ближайших событиях с клавиатуры админа"""
+    print(callback.message.from_user.id)
+    users_to_ping = db.get_all_users_exclude_admin(callback.message.from_user.id)
+    await callback.message.answer(f"{users_to_ping}")
+
+
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     """Отмена всех FSM и удаление последнего сообщения"""

@@ -76,6 +76,8 @@ def admins_keyboard():
         InlineKeyboardButton(
             text="Удалить событие", callback_data="admin_delete-event"
         ),
+        InlineKeyboardButton(
+            text="Оповестить пользователей", callback_data="admin_ping"),
     )
     return keyboard
 
