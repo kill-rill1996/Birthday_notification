@@ -8,12 +8,13 @@ from aiogram.fsm.context import FSMContext
 
 import config
 from services.errors import DateValidationError, DatePeriodError
-from services.utils import parse_birthday_date, check_validation_date
-from services.fsm_states import FSMGetPayment, FSMAddEvent
+from services.utils import check_validation_date
+from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
-from services.messages import all_users_admin_message, admin_event_info_message, admin_event_payer_info_message, admin_successful_create_event_birthday
+from services.messages import all_users_admin_message, admin_event_info_message, admin_event_payer_info_message, \
+    admin_successful_create_event_birthday, admin_event_delete_confirmation
 
 router = Router()
 router.message.middleware.register(CheckIsAdminMiddleware(config.ADMINS))
@@ -38,6 +39,37 @@ async def events_handler(callback: types.CallbackQuery):
     if not events:
         msg = "Активных событий в ближайший месяц нет."
     await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "admin" and callback.data.split("_")[1] == "delete-event")
+async def delete_events_admin_panel(callback: types.CallbackQuery, state: FSMContext):
+    """Удаление события через панель администратора, получение всех событий. Старт FSMDeleteEvent"""
+    events = db.get_all_events()
+    await state.set_state(FSMDeleteEvent.pick_event)
+    await callback.message.answer("Выберите событие, которое хотите удалить:",
+                                  reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
+
+
+@router.callback_query(FSMDeleteEvent.pick_event, lambda callback: callback.data.split("_")[0] == "event")
+async def delete_event_admin_confirmation(callback: types.CallbackQuery, state: FSMContext):
+    """Выбор события для удаления"""
+    event_id = int(callback.data.split("_")[1])
+    event = db.get_event_by_event_id(event_id)
+    await state.set_state(FSMDeleteEvent.confirmation)
+    await callback.message.answer(admin_event_delete_confirmation(event),
+                                  reply_markup=kb.yes_no_admin_keyboard(event_id).as_markup())
+
+
+@router.callback_query(FSMDeleteEvent.confirmation)
+async def delete_event(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data.split("_")[0] == "yes":
+        event_id = int(callback.data.split("_")[1])
+        db.delete_event(event_id)
+        await callback.message.answer("Событие удалено!")
+    else:
+        await callback.message.answer("Отмена удаления")
+    await state.clear()
+    await callback.message.delete()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'delete-user')
@@ -121,6 +153,7 @@ async def confirm_payment(message: types.Message, state: FSMContext):
             msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
             await message.answer(msg, parse_mode=ParseMode.HTML)
             await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+            await state.clear()
         except ValueError:
             await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
     else:
@@ -129,7 +162,7 @@ async def confirm_payment(message: types.Message, state: FSMContext):
         msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
         await message.message.answer(msg, parse_mode=ParseMode.HTML)
         await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-    await state.clear()
+        await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')

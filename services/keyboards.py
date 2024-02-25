@@ -62,20 +62,21 @@ def admins_keyboard():
         InlineKeyboardButton(
             text="События", callback_data="admin_events"),
         InlineKeyboardButton(
-            text="Добавить событие", callback_data="admin_add-event"
-        )
+            text="Пользователи", callback_data="admin_users"),
     )
     keyboard.row(
         InlineKeyboardButton(
-            text="Пользователи", callback_data="admin_users"),
+            text="Добавить событие", callback_data="admin_add-event"
+        ),
         InlineKeyboardButton(
             text="Удалить польз.", callback_data="admin_delete-user"),
     )
-    # keyboard.row(
-    #     InlineKeyboardButton(
-    #         text="Отмена", callback_data="something_cancel"
-    #     )
-    # )
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Удалить событие", callback_data="admin_delete-event"
+        ),
+    )
     return keyboard
 
 
@@ -265,5 +266,33 @@ def admin_pay_keyboard():
 
     keyboard.row(InlineKeyboardButton(
         text="Отмена", callback_data="something_cancel")
+    )
+    return keyboard
+
+
+def all_events_keyboard_to_delete(events: List[tables.Event]):
+    """Клавиатура администратора со всеми событиями"""
+    keyboard = InlineKeyboardBuilder()
+
+    for event in events:
+        if event.title == "birthday":
+            event_user = db.get_user_by_id(event.user_id)
+            keyboard.row(
+                InlineKeyboardButton(
+                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}",
+                    callback_data=f"event_{event.id}"),
+            )
+        else:
+            keyboard.row(
+                InlineKeyboardButton(
+                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event.title}",
+                    callback_data=f"event_{event.id}"),
+            )
+    keyboard.adjust(2)
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="<<Назад", callback_data="something_cancel"
+        )
     )
     return keyboard

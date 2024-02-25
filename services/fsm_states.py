@@ -23,3 +23,8 @@ class FSMAddEvent(StatesGroup):
     title = State()
     event_date = State()
     except_user = State()
+
+
+class FSMDeleteEvent(StatesGroup):
+    pick_event = State()
+    confirmation = State()

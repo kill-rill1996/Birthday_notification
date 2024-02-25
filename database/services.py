@@ -192,3 +192,10 @@ def get_event_from_payer_id(payer_id: int) -> tables.Event:
         payer = session.query(tables.Payer).filter_by(id=payer_id).first()
         event = session.query(tables.Event).filter_by(id=payer.event_id).first()
         return event
+
+
+def get_event_by_event_id(event_id: int) -> tables.Event:
+    """Получение event через event_id"""
+    with Session() as session:
+        event = session.query(tables.Event).filter_by(id=event_id).first()
+        return event

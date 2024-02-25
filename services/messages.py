@@ -116,6 +116,11 @@ def admin_event_payer_info_message(user: tables.User) -> str:
 
 def admin_successful_create_event_birthday(user: tables.User) -> str:
     """Сообщение об успешном создании администратором внепланового ДР"""
-    msg = f'Событие "День рождения <b>{user.user_name} {datetime.strftime(user.birthday_date, "%d.%m.%Y")}</b>" успешно создано!'
+    msg = f'Событие "День рождения <b>{user.user_name}"</b> на <b>{datetime.strftime(user.birthday_date, "%d.%m.%Y")}</b> успешно создано!'
     return msg
 
+
+def admin_event_delete_confirmation(event: tables.Event) -> str:
+    """Сообщение о подтверждении удаления события"""
+    msg = f'Вы действительно хотите удалить это событие <b>{event.title if event.title != "birthday" else "День рождения"} {datetime.strftime(event.event_date, "%d.%m.%Y")}</b>?'
+    return msg
