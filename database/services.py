@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
 
 from database import tables
 from .database import Session
@@ -33,12 +34,14 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
     users, которые должны оплатить событие, и user id у которого событие"""
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
-        events_with_payers = session.query(tables.Event).filter(tables.Event.user_id != user.id)\
+        events_with_payers = session.query(tables.Event)\
+            .filter(or_(tables.Event.user_id != user.id, tables.Event.user_id == None))\
             .options(joinedload(tables.Event.payers)).all()
 
         event_users = []
         for event in events_with_payers:
-            event_users.append(get_user_by_id(event.user_id)) #TODO добавить не ДР
+            if event.user_id:
+                event_users.append(get_user_by_id(event.user_id)) #TODO добавить не ДР
         return events_with_payers, event_users, user.id
 
 
