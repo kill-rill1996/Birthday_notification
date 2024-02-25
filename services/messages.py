@@ -19,18 +19,27 @@ def successful_user_create_message(data: dict):
 def upcoming_events_message(events_with_payers: List[tables.Event], event_users: List[tables.User], user_id: int) -> str:
     """Сообщение о ближайщих событиях"""
     if events_with_payers:
-        msg = "В ближайщий месяц будут следующие события:\n"
-        for idx, event in enumerate(events_with_payers):
-            for user in event_users:
-                if event.user_id == user.id:
-                    sub_msg = f"{idx + 1}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
-                    msg += sub_msg
-                    for payer in event.payers:
-                        if payer.user_id == user_id:
-                            if payer.payment_status:
-                                msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
-                            else:
-                                msg += f"❌ Событие не оплачено\n\n"
+        msg = "В ближайщий месяц будут следующие события:\n\n"
+
+        for idx, event in enumerate(events_with_payers, start=1):
+            # проверка на тип события (др или другое)
+            if event.title == "birthday": # др
+                for user in event_users:
+                    if event.user_id == user.id:
+                        sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
+                        msg += sub_msg
+
+            else: # другое
+                sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
+                msg += sub_msg
+
+            # плательщики для события
+            for payer in event.payers:
+                if payer.user_id == user_id:
+                    if payer.payment_status:
+                        msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
+                    else:
+                        msg += f"❌ Событие не оплачено\n\n"
         msg.rstrip()
     else:
         msg = "В ближайщий месяц событий нет"
