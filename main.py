@@ -25,9 +25,9 @@ async def init_bot() -> None:
         users = get_all_users_without_admin(callback.from_user.id)
 
         if callback.data.split("_")[1] == "all":
-            events_with_payers = get_all_events()
+            events_with_payers = get_all_events(False)
             for user in users:
-                msg = ping_user(user, events_with_payers)
+                msg = ping_user(user.id, events_with_payers)
                 await bot.send_message(user.telegram_id, msg)
         else:
             event_id = int(callback.data.split("_")[1])

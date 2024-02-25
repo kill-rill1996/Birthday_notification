@@ -135,7 +135,19 @@ def admin_event_delete_confirmation(event: tables.Event) -> str:
     return msg
 
 
-def ping_user(user: tables.User, events_with_payers: List[tables.Event] | tables.Event) -> str:
+def ping_user(user_id: int, events_with_payers: List[tables.Event] | tables.Event) -> str:
     """Сообщение пользователям о ближайщих событиях"""
-    pass
+    msg = "Напоминаем о ближайших событиях\n\n"
+
+    # напоминание обо всех событиях
+    if type(events_with_payers) == list:
+        for idx, event in enumerate(events_with_payers, start=1):
+            for payer in event.payers:
+                if payer.user_id == user_id:
+                    if event.title == "birthday":
+                        pass
+                    else:
+                        pass
+
+    return msg
 
