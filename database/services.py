@@ -34,7 +34,7 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
     users, которые должны оплатить событие, и user id у которого событие"""
     with Session() as session:
         user = get_user_by_tg_id(tg_id)
-        events_with_payers = session.query(tables.Event)\
+        events_with_payers = session.query(tables.Event).filter(tables.Event.active == True)\
             .filter(or_(tables.Event.user_id != user.id, tables.Event.user_id == None))\
             .options(joinedload(tables.Event.payers)).all()
 
@@ -45,20 +45,35 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
         return events_with_payers, event_users, user.id
 
 
-def get_all_events() -> List[tables.Event]:
+def get_all_events(all_events: bool = True) -> List[tables.Event]:
     """Получение всех событий"""
     with Session() as session:
-        events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
-            .order_by(tables.Event.event_date).all()
-        return events
+        if all_events:
+            events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
+                .order_by(tables.Event.event_date).all()
+            return events
+        else:
+            events = session.query(tables.Event).filter(tables.Event.active == True)\
+                .options(joinedload(tables.Event.payers))\
+                .order_by(tables.Event.event_date).all()
+            return events
 
 
-def get_all_events_birthday() -> List[tables.Event]:
+def get_all_events_birthday(all_events: bool = True) -> List[tables.Event]:
     """Получение всех событий с title birthday"""
     with Session() as session:
-        events = session.query(tables.Event).filter(tables.Event.title == "birthday").options(joinedload(tables.Event.payers))\
-            .order_by(tables.Event.event_date).all()
-        return events
+        # все события
+        if all_events:
+            events = session.query(tables.Event).filter(tables.Event.title == "birthday").options(joinedload(tables.Event.payers))\
+                .order_by(tables.Event.event_date).all()
+            return events
+        # только активные события
+        else:
+            events = session.query(tables.Event).filter(tables.Event.title == "birthday")\
+                .filter(tables.Event.active == True)\
+                .options(joinedload(tables.Event.payers)) \
+                .order_by(tables.Event.event_date).all()
+            return events
 
 
 def create_event_and_payers(user_id: int | None, birthday_date: datetime, title: str = "birthday") -> tables.Event:
@@ -108,6 +123,15 @@ def delete_event(event_id: int) -> tables.Event:
     with Session() as session:
         event = session.query(tables.Event).filter_by(id=event_id).first()
         session.delete(event)
+        session.commit()
+        return event
+
+
+def hide_event(event_id: int) -> tables.Event:
+    """Делаем событие неактивным с помощью event id"""
+    with Session() as session:
+        event = session.query(tables.Event).filter_by(id=event_id).first()
+        event.active = False
         session.commit()
         return event
 
