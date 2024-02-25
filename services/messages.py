@@ -71,8 +71,13 @@ def help_message() -> str:
 
 
 def admin_event_info_message(event: tables.Event, event_user: tables.User, payer_users: List[tables.User]) -> str:
-    msg = f"<b>{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}</b>\n" \
-          f"Собранная сумма <b>{event.summ} р.</b>\n\n"
+    if event.title == "birthday":
+
+        msg = f"<b>{datetime.strftime(event.event_date, '%d.%m.%Y')} день рождения {event_user.user_name}</b>\n" \
+              f"Собранная сумма <b>{event.summ} р.</b>\n\n"
+    else:
+        msg = f"<b>{datetime.strftime(event.event_date, '%d.%m.%Y')} {event.title}</b>\n" \
+              f"Собранная сумма <b>{event.summ} р.</b>\n\n"
 
     already_payers_count = 0
 
@@ -96,7 +101,7 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
                 msg += f"\n{sub_msg}"
 
     if already_payers_count:
-        msg += "\n\nНиже указаны пользователи, которые не оплатили данное событие"
+        msg += "\n\nНиже указаны пользователи, которые не оплатили событие"
     else:
         msg += "\n\nДанное событие оплатили все пользователи"
 

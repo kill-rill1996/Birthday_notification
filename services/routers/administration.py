@@ -102,10 +102,11 @@ async def get_pay(callback: types.CallbackQuery, state: FSMContext):
 
     await state.set_state(FSMGetPayment.amount)
     await state.update_data(payer_id=payer_id)
-    msg = "Укажите сумму, которую внес пользователь"
-    await callback.message.answer(msg, reply_markup=kb.cancel_inline_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+    msg = "Напишите сумму, которую внес пользователь или выберите из предложенных"
+    await callback.message.answer(msg, reply_markup=kb.admin_pay_keyboard().as_markup(), parse_mode=ParseMode.HTML)
 
 
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "paid", FSMGetPayment.amount)
 @router.message(FSMGetPayment.amount)
 async def confirm_payment(message: types.Message, state: FSMContext):
     """Фиксирование оплаты в бд. Окончание FSM по оплате пользователем события"""
@@ -113,16 +114,22 @@ async def confirm_payment(message: types.Message, state: FSMContext):
     payer_id = data["payer_id"]
     user = db.get_user_by_payer_id(payer_id)
 
-    try:
-        amount = int(message.text)
+    if type(message) == types.Message:
+        try:
+            amount = int(message.text)
+            db.add_payment(payer_id, amount)
+            msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
+            await message.answer(msg, parse_mode=ParseMode.HTML)
+            await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+        except ValueError:
+            await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
+    else:
+        amount = int(message.data.split("_")[1])
         db.add_payment(payer_id, amount)
         msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
-        await message.answer(msg, parse_mode=ParseMode.HTML)
-        await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-        await state.clear()
-
-    except ValueError:
-        await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
+        await message.message.answer(msg, parse_mode=ParseMode.HTML)
+        await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+    await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')

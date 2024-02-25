@@ -82,20 +82,22 @@ def admins_keyboard():
 def all_events_keyboard(events: List[tables.Event]):
     """Клавиатура администратора со всеми событиями"""
     keyboard = InlineKeyboardBuilder()
-    for count, event in enumerate(events, start=1):
-        event_user = db.get_user_by_id(event.user_id)  # получение пользователя из базы, иначе ошибка из-за дырявой базы
-        if count % 2 == 1:
+
+    for event in events:
+        if event.title == "birthday":
+            event_user = db.get_user_by_id(event.user_id)
             keyboard.row(
                 InlineKeyboardButton(
                     text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}",
                     callback_data=f"event_{event.id}"),
             )
         else:
-            keyboard.add(
+            keyboard.row(
                 InlineKeyboardButton(
-                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}",
+                    text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event.title}",
                     callback_data=f"event_{event.id}"),
             )
+    keyboard.adjust(2)
 
     keyboard.row(
         InlineKeyboardButton(
@@ -249,5 +251,19 @@ def all_users_keyboard_for_except_from_event(users: List[tables.User]):
         InlineKeyboardButton(
             text="Отмена", callback_data="something_cancel"
         )
+    )
+    return keyboard
+
+
+def admin_pay_keyboard():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="1000", callback_data="paid_1000"),
+        InlineKeyboardButton(text="2000", callback_data="paid_2000"),
+        InlineKeyboardButton(text="3000", callback_data="paid_3000"),
+    )
+
+    keyboard.row(InlineKeyboardButton(
+        text="Отмена", callback_data="something_cancel")
     )
     return keyboard
