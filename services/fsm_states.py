@@ -28,3 +28,11 @@ class FSMAddEvent(StatesGroup):
 class FSMDeleteEvent(StatesGroup):
     pick_event = State()
     confirmation = State()
+
+
+class FSMUpdateEventDate(StatesGroup):
+    event_date = State()
+
+
+class FSMUpdateEventTitle(StatesGroup):
+    event_title = State()

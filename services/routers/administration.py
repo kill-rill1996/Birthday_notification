@@ -7,9 +7,9 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 import config
-from services.errors import DateValidationError, DatePeriodError
+from services.errors import DateValidationError, DatePeriodError, WrongDateError
 from services.utils import check_validation_date
-from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent
+from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
@@ -247,6 +247,78 @@ async def notify_users_menu(callback: types.CallbackQuery):
     users_to_ping, events = db.get_all_users_and_events_exclude_admin(callback.from_user.id)
     keyboard = kb.all_events_to_ping_keyboard(events)
     await callback.message.answer(f"Выберите событие о котором хотите оповестить пользователей", reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
+async def update_event(callback: types.CallbackQuery, state: FSMContext):
+    """Изменение даты события с панели администратора, начало FSMUpdateEventDate"""
+    event_id = callback.data.split("_")[1]
+    await state.set_state(FSMUpdateEventDate.event_date)
+    await state.update_data(event_id=event_id)
+    await callback.message.answer("Введите дату события в формате <b>ДД.ММ.ГГГГ</b>",
+                                  parse_mode=ParseMode.HTML, reply_markup=kb.cancel_inline_keyboard().as_markup())
+
+
+@router.message(FSMUpdateEventDate.event_date)
+async def update_event_date(message: types.Message, state: FSMContext):
+    """Изменение даты события, окончание FSMUpdateEventDate"""
+    try:
+        new_event_date = check_validation_date(message.text)
+
+        if new_event_date < datetime.now().date():
+            raise WrongDateError
+
+        data = await state.get_data()
+        event_id = data["event_id"]
+        updated_event = db.update_event_date(event_id, new_event_date)
+
+        # если событие др
+        if updated_event.title == "birthday":
+            user = db.get_user_by_id(updated_event.user_id)
+
+            events = db.get_all_events()
+            await message.answer(f"Дата события \"День рождения пользователя <b>{user.user_name}</b>\" изменена "
+                                 f"на <b>{datetime.strftime(updated_event.event_date, '%d.%m.%Y')}</b>")
+
+        # если событие другое
+        else:
+            events = db.get_all_events()
+            await message.answer(f"Дата события <b>\"{updated_event.title}\"</b> изменена "
+                                 f"на <b>{datetime.strftime(updated_event.event_date, '%d.%m.%Y')}</b>")
+
+        await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+        await state.clear()
+
+    except DateValidationError:
+        await message.answer(f"Неверный формат даты. Попробуйте еще раз")
+    except DatePeriodError:
+        await message.answer(f"Неверно указан год события (допускается текущий год и следующий). Попробуйте еще раз")
+    except WrongDateError:
+        await message.answer("Дата не может быть раньше сегодняшней. Попробуйте еще раз")
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-title")
+async def update_event(callback: types.CallbackQuery, state: FSMContext):
+    """Изменение названия события с панели администратора, начало FSMUpdateEventTitle"""
+    event_id = callback.data.split("_")[1]
+    await state.set_state(FSMUpdateEventTitle.event_title)
+    await state.update_data(event_id=event_id)
+    await callback.message.answer("Введите новое название события", reply_markup=kb.cancel_inline_keyboard().as_markup())
+
+
+@router.message(FSMUpdateEventTitle.event_title)
+async def update_event_date(message: types.Message, state: FSMContext):
+    """Изменение названия события, окончание FSMUpdateEventTitle"""
+    data = await state.get_data()
+    event_id = data["event_id"]
+    new_title = message.text
+
+    db.update_event_title(event_id, new_title)
+    events = db.get_all_events()
+
+    await message.answer(f"Название события изменено на <b>{new_title}</b>")
+    await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+    await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))

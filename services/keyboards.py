@@ -168,6 +168,21 @@ def payer_info_admin_keyboard(event: tables.Event, payer_users: List[tables.User
 
     keyboard.adjust(2)
 
+    if event.title != "birthday":
+        keyboard.row(
+            InlineKeyboardButton(
+                text="Изменить название события",
+                callback_data=f"update-event-title_{event.id}"
+            )
+        )
+
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Изменить дату события",
+            callback_data=f"update-event-date_{event.id}"
+        )
+    )
+
     keyboard.row(InlineKeyboardButton(
             text="<<Назад",
             callback_data="admin_events"

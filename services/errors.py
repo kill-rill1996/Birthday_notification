@@ -5,3 +5,9 @@ class DateValidationError(Exception):
 
 class DatePeriodError(Exception):
     pass
+
+
+class WrongDateError(Exception):
+    """Ошибка если дата меньше сегодняшей даты"""
+    pass
+

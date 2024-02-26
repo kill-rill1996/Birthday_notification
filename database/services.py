@@ -36,7 +36,7 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
         user = get_user_by_tg_id(tg_id)
         events_with_payers = session.query(tables.Event).filter(tables.Event.active == True)\
             .filter(or_(tables.Event.user_id != user.id, tables.Event.user_id == None))\
-            .options(joinedload(tables.Event.payers)).all()
+            .options(joinedload(tables.Event.payers)).order_by(tables.Event.event_date).all()
 
         event_users = []
         for event in events_with_payers:
@@ -262,3 +262,24 @@ def get_event_users() -> List[tables.User]:
             if event.user_id:
                 event_users.append(get_user_by_id(event.user_id))
         return event_users
+
+
+def update_event_date(event_id: int, new_event_date: datetime.date) -> tables.Event:
+    """Изменение даты события с панели администратора"""
+    with Session() as session:
+        event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
+        event.event_date = new_event_date
+        session.commit()
+
+        updated_event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
+        return updated_event
+
+
+def update_event_title(event_id: int, new_event_title: str):
+    """Изменение названия события с панели администратора"""
+    with Session() as session:
+        event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
+        event.title = new_event_title
+        session.commit()
+
+
