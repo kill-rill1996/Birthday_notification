@@ -41,7 +41,7 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
         event_users = []
         for event in events_with_payers:
             if event.user_id:
-                event_users.append(get_user_by_id(event.user_id)) #TODO добавить не ДР
+                event_users.append(get_user_by_id(event.user_id))
         return events_with_payers, event_users, user.id
 
 
@@ -224,7 +224,7 @@ def get_event_from_payer_id(payer_id: int) -> tables.Event:
 def get_event_by_event_id(event_id: int) -> tables.Event:
     """Получение event через event_id"""
     with Session() as session:
-        event = session.query(tables.Event).filter_by(id=event_id).first()
+        event = session.query(tables.Event).filter_by(id=event_id).options(joinedload(tables.Event.payers)).first()
         return event
 
 
@@ -249,3 +249,16 @@ def get_event_with_payer(event_id: int) -> tables.Event:
         event = session.query(tables.Event).filter_by(id=event_id).order_by(tables.Event.event_date)\
             .options(joinedload(tables.Event.payers)).first()
         return event
+
+
+def get_event_users() -> List[tables.User]:
+    """Юзеры, у которых есть события"""
+    with Session() as session:
+        events_with_payers = session.query(tables.Event).filter(tables.Event.active == True)\
+            .options(joinedload(tables.Event.payers)).all()
+
+        event_users = []
+        for event in events_with_payers:
+            if event.user_id:
+                event_users.append(get_user_by_id(event.user_id))
+        return event_users

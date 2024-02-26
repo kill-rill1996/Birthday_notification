@@ -135,19 +135,61 @@ def admin_event_delete_confirmation(event: tables.Event) -> str:
     return msg
 
 
-def ping_user(user_id: int, events_with_payers: List[tables.Event] | tables.Event) -> str:
+def ping_user_message(user_to_send: tables.User, event_users: List[tables.User], events_with_payers: List[tables.Event] | tables.Event) -> str:
     """Сообщение пользователям о ближайщих событиях"""
-    msg = "Напоминаем о ближайших событиях\n\n"
 
     # напоминание обо всех событиях
-    if type(events_with_payers) == list:
+    if type(events_with_payers) == list: # обо всех событиях
+        msg = "Напоминаем о ближайших событиях\n\n"
+        counter = 1
+
         for idx, event in enumerate(events_with_payers, start=1):
+            # проверка на тип события (др или другое)
+            if event.title == "birthday":  # др
+                for user in event_users:
+                    if event.user_id == user.id and event.user_id != user_to_send.id:
+                        sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
+                        msg += sub_msg
+                        counter += 1
+
+            else:  # другое
+                sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
+                msg += sub_msg
+                counter += 1
+
+            # плательщики для события
             for payer in event.payers:
-                if payer.user_id == user_id:
-                    if event.title == "birthday":
-                        pass
+                if payer.user_id == user_to_send.id and event.user_id != user_to_send.id:
+                    if payer.payment_status:
+                        msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
                     else:
-                        pass
+                        msg += f"❌ Событие не оплачено\n\n"
+        msg.rstrip()
+    else: # конкретное событие
+        msg = "Напоминаем о приближающемся событии\n\n"
+        len_message = len(msg)
+
+        if events_with_payers.title == "birthday": # др
+            for user in event_users:
+                if events_with_payers.user_id == user.id and events_with_payers.user_id != user_to_send.id:
+                    sub_msg = f"<b>{datetime.strftime(events_with_payers.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
+                    msg += sub_msg
+
+        else: # другое
+            sub_msg = f"<b>{datetime.strftime(events_with_payers.event_date, '%d.%m.%Y')}</b> <b>{events_with_payers.title}</b>\n"
+            msg += sub_msg
+
+        # плательщики для события
+        for payer in events_with_payers.payers:
+            if payer.user_id == user_to_send.id and events_with_payers.user_id != user_to_send.id:
+                if payer.payment_status:
+                    msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
+                else:
+                    msg += f"❌ Событие не оплачено\n\n"
+
+        # сообщение для пользователя у которого др
+        if len(msg) == len_message:
+            msg = "Для вас в ближайшее время нет событий"
 
     return msg
 

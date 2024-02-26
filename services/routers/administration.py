@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 
 import config
 from services.errors import DateValidationError, DatePeriodError
-from services.utils import check_validation_date, send_message
+from services.utils import check_validation_date
 from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
