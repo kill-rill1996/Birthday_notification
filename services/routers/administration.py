@@ -166,22 +166,30 @@ async def confirm_payment(message: types.Message, state: FSMContext):
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')
-async def create_new_event_panel(callback: types.CallbackQuery):
+async def create_new_event_panel(callback: types.CallbackQuery, state: FSMContext):
     """Создание события через клавиатуру администратора"""
-    await callback.message.answer("Выберите тип события, которое хотите добавить", reply_markup=kb.add_event_admin_keyboard().as_markup())
+    await state.set_state(FSMAddEvent.title)
+    await callback.message.answer('Введите название события (например "корпоратив")',
+                                  reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
-@router.callback_query(lambda callback: callback.data.split('_')[0] == 'add-event')
-async def create_new_event(callback: types.CallbackQuery, state: FSMContext):
-    """Начало создания события. Начало FSM (если не др)"""
-    if callback.data.split('_')[1] == 'other':
-        await state.set_state(FSMAddEvent.title)
-        await callback.message.answer('Введите название события (например "корпоратив")',
-                                      reply_markup=kb.cancel_inline_keyboard().as_markup())
-    else:
-        users = db.get_all_users()
-        await callback.message.answer('Выберите пользователя, чей день рождения хотите добавить в ближайшие события',
-                                      reply_markup=kb.all_users_keyboard_for_event_creating(users).as_markup())
+# @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')
+# async def create_new_event_panel(callback: types.CallbackQuery):
+#     """Создание события через клавиатуру администратора"""
+#     await callback.message.answer("Выберите тип события, которое хотите добавить", reply_markup=kb.add_event_admin_keyboard().as_markup())
+#
+#
+# @router.callback_query(lambda callback: callback.data.split('_')[0] == 'add-event')
+# async def create_new_event(callback: types.CallbackQuery, state: FSMContext):
+#     """Начало создания события. Начало FSM (если не др)"""
+#     if callback.data.split('_')[1] == 'other':
+#         await state.set_state(FSMAddEvent.title)
+#         await callback.message.answer('Введите название события (например "корпоратив")',
+#                                       reply_markup=kb.cancel_inline_keyboard().as_markup())
+#     else:
+#         users = db.get_all_users()
+#         await callback.message.answer('Выберите пользователя, чей день рождения хотите добавить в ближайшие события',
+#                                       reply_markup=kb.all_users_keyboard_for_event_creating(users).as_markup())
 
 
 @router.message(FSMAddEvent.title)
@@ -207,7 +215,7 @@ async def create_event_date_new_event(message: types.Message, state: FSMContext)
     except DateValidationError:
         await message.answer(f"Неверный формат даты. Попробуйте еще раз")
     except DatePeriodError:
-        await message.answer(f"Неверно указан год события (допускается текущий год и следующий). Попробуйте еще раз")
+        await message.answer(f"Неверно указан год события (допускается текущий год или следующий). Попробуйте еще раз")
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event-except',

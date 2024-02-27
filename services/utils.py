@@ -1,10 +1,8 @@
-from datetime import date, datetime
-from typing import List
+from datetime import datetime
 
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
-from database.tables import Event
 from services.errors import DateValidationError, DatePeriodError
 
 
@@ -23,9 +21,9 @@ def check_validation_date(message: str) -> datetime.date:
     """Проверяет валидность даты для добавляемых событий"""
     try:
         result = datetime.strptime(message, "%d.%m.%Y").date()
-        if result.year > datetime.now().year + 1 or result.year < datetime.now().year:
+        if result.year < datetime.now().year or result.year > datetime.now().year + 1:
             raise DatePeriodError
-    except Exception:
+    except ValueError:
         raise DateValidationError
     return result
 
