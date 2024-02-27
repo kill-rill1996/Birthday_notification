@@ -7,7 +7,7 @@ from database import services as db
 def main():
     """Работает по crone раз в день"""
     # поверяем актуальность существующих событий и удаляем прошедшие
-    events = db.get_all_events()
+    events = db.get_all_events(only_active=False)
     for event in events:
         if event.event_date < datetime.now().date():
             print(f"удаляем событие пользователя {event.user_id}")
@@ -15,10 +15,10 @@ def main():
 
     # добавляем новые события и плательщиков в table Payers
     users = db.get_all_users()
-    events_birthday = db.get_all_events_birthday()
+    events_birthday = db.get_all_events_birthday(only_active=True)
     user_ids_with_birthday = [event.user_id for event in events_birthday]
     for user in users:
-        # проверяем есть ли уже событие этого пользователя с тэгом birthday
+        # проверяем есть ли уже активное событие этого пользователя с тэгом birthday
         if events:
             if user.id not in user_ids_with_birthday and is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)

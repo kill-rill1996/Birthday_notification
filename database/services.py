@@ -45,10 +45,10 @@ def get_events_for_month(tg_id: int) -> (List[tables.Event], List[tables.User], 
         return events_with_payers, event_users, user.id
 
 
-def get_all_events(all_events: bool = True) -> List[tables.Event]:
+def get_all_events(only_active: bool = True) -> List[tables.Event]:
     """Получение всех событий"""
     with Session() as session:
-        if all_events:
+        if not only_active:
             events = session.query(tables.Event).options(joinedload(tables.Event.payers))\
                 .order_by(tables.Event.event_date).all()
             return events
@@ -59,11 +59,11 @@ def get_all_events(all_events: bool = True) -> List[tables.Event]:
             return events
 
 
-def get_all_events_birthday(all_events: bool = True) -> List[tables.Event]:
+def get_all_events_birthday(only_active: bool = True) -> List[tables.Event]:
     """Получение всех событий с title birthday"""
     with Session() as session:
         # все события
-        if all_events:
+        if not only_active:
             events = session.query(tables.Event).filter(tables.Event.title == "birthday").options(joinedload(tables.Event.payers))\
                 .order_by(tables.Event.event_date).all()
             return events
