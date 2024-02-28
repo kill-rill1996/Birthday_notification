@@ -24,7 +24,7 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
         for idx, event in enumerate(events_with_payers, start=1):
             # проверка на тип события (др или другое)
             if event.title == "birthday": # др
-                for user in event_users:
+                for user in list(set(event_users)):
                     if event.user_id == user.id:
                         sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
                         msg += sub_msg
@@ -42,7 +42,7 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
                         msg += f"❌ Событие не оплачено\n\n"
         msg.rstrip()
     else:
-        msg = "В ближайщий месяц событий нет"
+        msg = "В ближайший месяц событий нет"
     return msg
 
 
@@ -69,7 +69,7 @@ def help_message() -> str:
           "Команды бота:\n\n" \
           "/start — старт бота и приветственное сообщение\n" \
           "/registration — регистрация пользователя, если он еще не зарегистрирован\n" \
-          "/events — события, которые произойдут в ближайщий месяц\n" \
+          "/events — события, которые произойдут в ближайший месяц\n" \
           "/profile — просмотр ваших данных (имя пользователя и дата рождения, указанные при регистрации)\n" \
           "/update — изменение ваших данных\n" \
           "/delete — удаление пользователя\n" \
