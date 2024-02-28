@@ -157,9 +157,11 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                     checked_user_ids.append(user.id)
 
             else:  # другое
-                sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
-                msg += sub_msg
-                counter += 1
+                # проверка чтобы пользователь не видел событие связанное с ним
+                if event.user_id != user_to_send.id:
+                    sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
+                    msg += sub_msg
+                    counter += 1
 
             # плательщики для события
             for payer in event.payers:
@@ -174,14 +176,18 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
         len_message = len(msg)
 
         if events_with_payers.title == "birthday": # др
+            checked_user_ids = []
             for user in event_users:
-                if events_with_payers.user_id == user.id and events_with_payers.user_id != user_to_send.id:
+                if events_with_payers.user_id == user.id and events_with_payers.user_id != user_to_send.id \
+                        and user.id not in checked_user_ids:
                     sub_msg = f"<b>{datetime.strftime(events_with_payers.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
                     msg += sub_msg
+                checked_user_ids.append(user.id)
 
         else: # другое
-            sub_msg = f"<b>{datetime.strftime(events_with_payers.event_date, '%d.%m.%Y')}</b> <b>{events_with_payers.title}</b>\n"
-            msg += sub_msg
+            if events_with_payers.user_id != user_to_send.id:
+                sub_msg = f"<b>{datetime.strftime(events_with_payers.event_date, '%d.%m.%Y')}</b> <b>{events_with_payers.title}</b>\n"
+                msg += sub_msg
 
         # плательщики для события
         for payer in events_with_payers.payers:
@@ -191,9 +197,9 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                 else:
                     msg += f"❌ Событие не оплачено\n\n"
 
-        # сообщение для пользователя у которого др
+        # сообщение для пользователя у которого событие
         if len(msg) == len_message:
-            msg = "Для вас в ближайшее время нет событий"
+            msg = ""
 
     return msg
 

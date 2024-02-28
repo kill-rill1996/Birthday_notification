@@ -31,7 +31,8 @@ async def init_bot() -> None:
             events_with_payers = get_all_events(False)
             for user_to_send in all_users:
                 msg = ping_user_message(user_to_send, event_users, events_with_payers)
-                await bot.send_message(user_to_send.telegram_id, msg)
+                if msg: # чтобы не оповещать пользователя о его др
+                    await bot.send_message(user_to_send.telegram_id, msg)
 
             # сообщение админу
             await callback.message.answer("Пользователи оповещены")
@@ -44,7 +45,8 @@ async def init_bot() -> None:
             event_with_payers = get_event_by_event_id(event_id)
             for user in all_users:
                 msg = ping_user_message(user, event_users, event_with_payers)
-                await bot.send_message(user.telegram_id, msg)
+                if msg:  # чтобы не оповещать пользователя о его событии
+                    await bot.send_message(user.telegram_id, msg)
 
             # сообщение админу
             await callback.message.answer("Пользователи оповещены")
