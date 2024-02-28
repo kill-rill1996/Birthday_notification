@@ -12,7 +12,7 @@ class User(Base):
     telegram_id = Column(Integer, index=True)
     birthday_date = Column(Date)
     tg_username = Column(String, nullable=True)    # data["event_from_user"].username
-    events = relationship('Event', uselist=False, backref='user', cascade="all,delete")
+    events = relationship('Event', backref='user', cascade="all,delete")
 
     def __repr__(self):
         return f'{self.id}. {self.user_name}'
