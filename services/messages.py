@@ -24,10 +24,12 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
         for idx, event in enumerate(events_with_payers, start=1):
             # проверка на тип события (др или другое)
             if event.title == "birthday": # др
-                for user in list(set(event_users)):
-                    if event.user_id == user.id:
+                checked_users_id = []
+                for user in event_users:
+                    if event.user_id == user.id and user.id not in checked_users_id:
                         sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
                         msg += sub_msg
+                    checked_users_id.append(user.id)
 
             else: # другое
                 sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
@@ -146,11 +148,13 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
         for idx, event in enumerate(events_with_payers, start=1):
             # проверка на тип события (др или другое)
             if event.title == "birthday":  # др
+                checked_user_ids = []
                 for user in event_users:
-                    if event.user_id == user.id and event.user_id != user_to_send.id:
+                    if event.user_id == user.id and event.user_id != user_to_send.id and user.id not in checked_user_ids:
                         sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
                         msg += sub_msg
                         counter += 1
+                    checked_user_ids.append(user.id)
 
             else:  # другое
                 sub_msg = f"{counter}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> <b>{event.title}</b>\n"
