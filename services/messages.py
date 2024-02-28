@@ -24,7 +24,7 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
         for idx, event in enumerate(events_with_payers, start=1):
             # проверка на тип события (др или другое)
             if event.title == "birthday": # др
-                for user in event_users:
+                for user in list(set(event_users)):
                     if event.user_id == user.id:
                         sub_msg = f"{idx}. <b>{datetime.strftime(event.event_date, '%d.%m.%Y')}</b> день рождения у пользователя <b>{user.user_name}</b>\n"
                         msg += sub_msg
