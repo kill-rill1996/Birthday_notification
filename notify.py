@@ -14,9 +14,9 @@ async def notify():
 
     active_events = db.get_all_events()
     for event in active_events:
-        days_before_event = event.event_date - datetime.now().date() # кол-во дней до мероприятия
-        # if days_before_event.days in [30, 10, 3, 1]:
-        if days_before_event.days:
+        days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
+        if days_before_event.days in [30, 10, 3, 1]:    # prod version
+        # if days_before_event.days:    # debug version
 
             # составляем сообщение
             birthday_user = None
