@@ -9,14 +9,13 @@ from database import services as db
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
 
-async def notify():
+async def main():
     all_users = db.get_all_users()
-
     active_events = db.get_all_events()
     for event in active_events:
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
-        if days_before_event.days in [30, 10, 3, 1]:    # prod version
-        # if days_before_event.days:    # debug version
+        # if days_before_event.days in [30, 10, 3, 1]:    # prod version
+        if days_before_event.days:    # debug version
 
             # составляем сообщение
             birthday_user = None
@@ -26,7 +25,7 @@ async def notify():
             if birthday_user:
                 msg += f"<b>{birthday_user.user_name} {'@' + birthday_user.tg_username + ' ' if birthday_user.tg_username else ''}</b>"
 
-            msg += f"осталось <b>{days_before_event.days}</b> дней <b>({datetime.strftime(event.event_date, '%d.%m.%Y')})</b>\n\n"
+            msg += f"осталось <b>{days_before_event.days}</b> дней ({datetime.strftime(event.event_date, '%d.%m.%Y')})\n\n"
             msg += f"{'Напоминаем о сборе деняк на подарок!' if event.title == 'birthday' else 'Напоминаем о сборе деняк на событие!'}"
 
             # рассылаем
@@ -40,4 +39,4 @@ async def notify():
 
 
 if __name__ == "__main__":
-    asyncio.run(notify())
+    asyncio.run(main())
