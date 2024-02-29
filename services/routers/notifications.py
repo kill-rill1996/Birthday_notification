@@ -24,7 +24,8 @@ async def command_events_handler(message: types.Message):
     """Вывод событий на ближайший месяц с помощью команды '/events'"""
     events_with_payers, event_users, user_id = db.get_events_for_month(message.from_user.id)
     msg = upcoming_events_message(events_with_payers, event_users, user_id)
-    await message.answer(msg, parse_mode=ParseMode.HTML)
+    # await message.answer(msg, parse_mode=ParseMode.HTML)
+    await message.answer(msg)
 
 
 @router.message(Command("delete"))

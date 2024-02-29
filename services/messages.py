@@ -19,7 +19,7 @@ def successful_user_create_message(data: dict):
 def upcoming_events_message(events_with_payers: List[tables.Event], event_users: List[tables.User], user_id: int) -> str:
     """Сообщение о ближайщих событиях"""
     if events_with_payers:
-        msg = "В ближайший месяц будут следующие события:\n\n"
+        msg = "В ближайшее время будут следующие события:\n\n"
 
         for idx, event in enumerate(events_with_payers, start=1):
             # проверка на тип события (др или другое)

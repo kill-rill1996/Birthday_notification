@@ -254,7 +254,7 @@ async def notify_users_menu(callback: types.CallbackQuery):
     """Оповещение всех пользователей о ближайших событиях с клавиатуры админа"""
     users_to_ping, events = db.get_all_users_and_events_exclude_admin(callback.from_user.id)
     keyboard = kb.all_events_to_ping_keyboard(events)
-    await callback.message.answer(f"Выберите событие о котором хотите оповестить пользователей", reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
+    await callback.message.answer(f"Выберите событие, о котором хотите оповестить пользователей", reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
