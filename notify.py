@@ -36,6 +36,7 @@ async def notify():
                 for user in all_users:
                     if user.id == user_id:
                         await bot.send_message(user.telegram_id, msg, parse_mode=ParseMode.HTML)
+            print("Пользователи оповещены о приближающихся событиях")
 
     await bot.session.close()
 
