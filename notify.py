@@ -10,6 +10,7 @@ bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
 
 async def notify():
+    """Функция автоматического оповещения за несколько дней до события"""
     all_users = db.get_all_users()
 
     active_events = db.get_all_events()
