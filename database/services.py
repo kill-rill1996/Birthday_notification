@@ -147,8 +147,9 @@ def delete_user_by_tg_id(tg_id: int) -> tables.User:
     """Удаление пользователя с помощью telegram_id"""
     with Session() as session:
         user = session.query(tables.User).filter_by(telegram_id=tg_id).first()
-        session.delete(user)
-        session.commit()
+        delete_user_by_id(user.id)
+        # session.delete(user)
+        # session.commit()
         return user
 
 
@@ -160,12 +161,14 @@ def delete_user_by_id(user_id: int) -> tables.User:
         if events:
             for event in events:
                 session.delete(event)
+                session.commit()
 
         # проверяем события с удаляемым пользователем и удаляем если существуют
         payers = session.query(tables.Payer).filter_by(user_id=user_id).all()
         if payers:
             for payer in payers:
                 session.delete(payer)
+                session.commit()
 
         user = session.query(tables.User).filter_by(id=user_id).first()
         session.delete(user)
