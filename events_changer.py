@@ -10,7 +10,7 @@ def main():
     events = db.get_all_events(only_active=False)
     for event in events:
         if event.event_date < datetime.now().date():
-            print(f"удаляем событие пользователя {event.user_id}")
+            print(f"удаляем событие пользователя {event.user_id} {datetime.strftime(datetime.now(), '%d.%m.%Y')}")
             db.delete_event(event.id)
 
     # добавляем новые события и плательщиков в table Payers
@@ -22,11 +22,11 @@ def main():
         if events:
             if user.id not in user_ids_with_birthday and is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)
-                print("Создано новое событие")
+                print("Создано новое событие" + datetime.strftime(datetime.now(), '%d.%m.%Y'))
         else:
             if is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)
-                print("Создано новое событие")
+                print("Создано новое событие" + datetime.strftime(datetime.now(), '%d.%m.%Y'))
 
 
 def check_days_count_before_event(event_date: datetime) -> datetime.date:

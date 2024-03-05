@@ -94,7 +94,6 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
 
     for idx, payer in enumerate(event.payers, start=1):
         for user in payer_users:
-            print(payer_users)
             if payer.user_id == user.id:
                 sub_msg = f"{idx}. <b>{user.user_name}</b>"
 
