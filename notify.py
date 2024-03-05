@@ -9,9 +9,11 @@ from database import services as db
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
 
-async def main():
+async def notify():
+    """Функция автоматического оповещения за несколько дней до события"""
     all_users = db.get_all_users()
     active_events = db.get_all_events()
+
     for event in active_events:
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
         # if days_before_event.days in [30, 10, 3, 1]:    # prod version
@@ -34,9 +36,12 @@ async def main():
                 for user in all_users:
                     if user.id == user_id:
                         await bot.send_message(user.telegram_id, msg, parse_mode=ParseMode.HTML)
+            print(f"Пользователи оповещены о приближающемся событии "
+                  f"{'пользователя ' + event.user_id if event.user_id else ''} {event.title} "
+                  f"{datetime.strftime(event.event_date, '%d.%m.%Y')}")
 
     await bot.session.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(notify())
