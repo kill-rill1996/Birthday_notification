@@ -1,2 +1,2 @@
-* * * * * /usr/local/bin/python3 /usr/src/app/events_changer.py >> /var/log/cron.log 2>&1
-# * * * * * /usr/local/bin/python3 /usr/src/app/notify.py >> /var/log/cron.log 2>&1
+0 9 * * * /usr/local/bin/python3 /usr/src/app/events_changer.py
+0 01,13 * * * /usr/local/bin/python3 /usr/src/app/notify.py
