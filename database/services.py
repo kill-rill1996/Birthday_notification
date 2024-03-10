@@ -247,7 +247,7 @@ def get_all_users_and_events_exclude_admin(tg_id: int) -> (List[tables.User], Li
     """Получение всех пользователей кроме админа и событий для оповещения о событиях"""
     with Session() as session:
         users = session.query(tables.User).filter(tables.User.telegram_id != tg_id).all()
-        events = session.query(tables.Event).all()
+        events = session.query(tables.Event).filter(tables.Event.active == True).all()
         return users, events
 
 
