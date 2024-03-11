@@ -17,3 +17,6 @@ SALT = os.getenv("SALT")
 
 # admins tg_ids
 ADMINS = [int(admin) for admin in os.getenv('ADMINS').split(',')]
+
+# notify in days before
+DAYS_BEFORE = [int(day) for day in os.getenv("DAYS_BEFORE").split(',')]

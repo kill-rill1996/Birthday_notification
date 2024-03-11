@@ -28,7 +28,7 @@ async def init_bot() -> None:
 
         # отправка сообщений обо всех событиях
         if callback.data.split("_")[1] == "all":
-            events_with_payers = get_all_events(False)
+            events_with_payers = get_all_events()
             for user_to_send in all_users:
                 msg = ping_user_message(user_to_send, event_users, events_with_payers)
                 if msg: # чтобы не оповещать пользователя о его др

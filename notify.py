@@ -3,7 +3,7 @@ from datetime import datetime
 from aiogram import Bot
 from aiogram.enums import ParseMode
 
-from config import TOKEN
+from config import TOKEN, DAYS_BEFORE
 from database import services as db
 
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
@@ -16,7 +16,7 @@ async def notify():
 
     for event in active_events:
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
-        # if days_before_event.days in [30, 10, 3, 1]:    # prod version
+        # if days_before_event.days in DAYS_BEFORE:    # prod version
         if days_before_event.days:    # debug version
 
             # составляем сообщение
