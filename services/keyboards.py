@@ -186,6 +186,13 @@ def payer_info_admin_keyboard(event: tables.Event, payer_users: List[tables.User
         )
     )
 
+    keyboard.row(
+        InlineKeyboardButton(
+            text="Изменить телефон для события>>",
+            callback_data=f"update-event-phone_{event.id}"
+        )
+    )
+
     keyboard.row(InlineKeyboardButton(
             text="<<Назад",
             callback_data="admin_events"
