@@ -367,3 +367,17 @@ def phone_choose_keyboard():
     keyboard.row(InlineKeyboardButton(text="Отмена", callback_data="something_cancel"))
 
     return keyboard
+
+
+def phone_choose_admin_keyboard(event_id: int):
+    """Клавиатура для выбора телефона для оплаты дня рождения"""
+    phones = config.PHONES
+
+    keyboard = InlineKeyboardBuilder()
+    for phone in phones:
+        keyboard.row(
+            InlineKeyboardButton(
+                text=phone, callback_data=f"birthday-phone_{event_id}_{phone}"
+            )
+        )
+    return keyboard

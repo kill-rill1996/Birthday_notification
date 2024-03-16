@@ -347,6 +347,18 @@ async def update_event_date(message: types.Message, state: FSMContext):
     await state.clear()
 
 
+@router.callback_query(lambda callback: callback.data.split('_')[0] == 'birthday-phone')
+async def choose_phone_for_birthday(callback: types.CallbackQuery):
+    """Выбор телефона для события типа 'birthday' (только для админов)"""
+    phone = callback.data.split('_')[2]
+    event = db.get_event_by_event_id(int(callback.data.split('_')[1]))
+    if event.phone == "":
+        # TODO функция обновления номера телефона
+        pass
+    else:
+        await callback.message.answer(f'Телефон <b>{event.phone}</b> уже добавлен в день рождения другим администратором.\nВы можете изменить телефон события во вкладке "События"',
+                                      parse_mode=ParseMode.HTML)
+
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))
 async def cancel_handler(callback: types.CallbackQuery, state: FSMContext):
     """Отмена всех FSM и удаление последнего сообщения"""
