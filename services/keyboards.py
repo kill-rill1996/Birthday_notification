@@ -3,6 +3,9 @@ from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime
 
+import config
+from config import PAID1, PAID2, PAID3
+
 from database import services as db, tables
 
 
@@ -276,9 +279,9 @@ def all_users_keyboard_for_except_from_event(users: List[tables.User]):
 def admin_pay_keyboard():
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
-        InlineKeyboardButton(text="1000", callback_data="paid_1000"),
-        InlineKeyboardButton(text="2000", callback_data="paid_2000"),
-        InlineKeyboardButton(text="3000", callback_data="paid_3000"),
+        InlineKeyboardButton(text=f"{PAID1}", callback_data=f"paid_{PAID1}"),
+        InlineKeyboardButton(text=f"{PAID2}", callback_data=f"paid_{PAID2}"),
+        InlineKeyboardButton(text=f"{PAID3}", callback_data=f"paid_{PAID3}"),
     )
 
     keyboard.row(InlineKeyboardButton(
@@ -346,4 +349,21 @@ def all_events_to_ping_keyboard(events: List[tables.Event]):
             text="<<Назад", callback_data="admin_back"
         )
     )
+    return keyboard
+
+
+def phone_choose_keyboard():
+    """Клавиатура для создания телефона оплаты в событии"""
+    phones = config.PHONES
+
+    keyboard = InlineKeyboardBuilder()
+    for phone in phones:
+        keyboard.row(
+            InlineKeyboardButton(
+                text=phone, callback_data=f"phone_{phone}"
+            )
+        )
+
+    keyboard.row(InlineKeyboardButton(text="Отмена", callback_data="something_cancel"))
+
     return keyboard

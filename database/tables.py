@@ -27,6 +27,7 @@ class Event(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=True, unique=False)
     event_date = Column(Date)
     summ = Column(Integer, default=0)
+    phone = Column(String, default="")
 
     payers = relationship("Payer", backref="event", cascade="all,delete")
 

@@ -7,8 +7,8 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 import config
-from services.errors import DateValidationError, DatePeriodError, WrongDateError
-from services.utils import check_validation_date
+from services.errors import DateValidationError, DatePeriodError, WrongDateError, PhoneNumberError
+from services.utils import check_validation_date, validate_phone_number, parse_phone_number
 from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
@@ -173,25 +173,6 @@ async def create_new_event_panel(callback: types.CallbackQuery, state: FSMContex
                                   reply_markup=kb.cancel_inline_keyboard().as_markup())
 
 
-# @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')
-# async def create_new_event_panel(callback: types.CallbackQuery):
-#     """Создание события через клавиатуру администратора"""
-#     await callback.message.answer("Выберите тип события, которое хотите добавить", reply_markup=kb.add_event_admin_keyboard().as_markup())
-#
-#
-# @router.callback_query(lambda callback: callback.data.split('_')[0] == 'add-event')
-# async def create_new_event(callback: types.CallbackQuery, state: FSMContext):
-#     """Начало создания события. Начало FSM (если не др)"""
-#     if callback.data.split('_')[1] == 'other':
-#         await state.set_state(FSMAddEvent.title)
-#         await callback.message.answer('Введите название события (например "корпоратив")',
-#                                       reply_markup=kb.cancel_inline_keyboard().as_markup())
-#     else:
-#         users = db.get_all_users()
-#         await callback.message.answer('Выберите пользователя, чей день рождения хотите добавить в ближайшие события',
-#                                       reply_markup=kb.all_users_keyboard_for_event_creating(users).as_markup())
-
-
 @router.message(FSMAddEvent.title)
 async def create_title_new_event(message: types.Message, state: FSMContext):
     """Создание названия события и переход на state event_date"""
@@ -226,14 +207,51 @@ async def create_event_excepting_user(callback: types.CallbackQuery, state: FSMC
         await state.update_data(except_user=None)
     else:
         await state.update_data(except_user=int(user_id))
-    data = await state.get_data()
 
-    db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'], title=data['title'])
+    await callback.message.answer(f"Выберите номер телефона, по которому будет производиться оплата, из списка "
+                                  f"или введите в ручную в формате 8ХХХХХХХХХХ",
+                                  reply_markup=kb.phone_choose_keyboard().as_markup())
 
-    await callback.message.answer(f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
-                                  parse_mode=ParseMode.HTML)
     await callback.message.delete()
-    await state.clear()
+    await state.set_state(FSMAddEvent.phone_to_pay)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "phone", FSMAddEvent.phone_to_pay)
+@router.message(FSMAddEvent.phone_to_pay)
+async def create_event_phone(message: types.Message, state: FSMContext):
+    """Добавление номера телефона по которому переводить деньги"""
+    if type(message) == types.Message:
+        phone = message.text
+        try:
+            validate_phone_number(phone)
+            phone = parse_phone_number(phone)
+
+            data = await state.get_data()
+            db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'],
+                                       title=data['title'], phone=phone)
+
+            await message.answer(
+                f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
+                parse_mode=ParseMode.HTML)
+
+            await state.clear()
+
+        except PhoneNumberError:
+            await message.answer(f"Неверный формат номера телефона. Попробуйте еще раз",
+                                 reply_markup=kb.phone_choose_keyboard().as_markup())
+    else:
+        phone = message.data.split("_")[1]
+
+        data = await state.get_data()
+        db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'],
+                                   title=data['title'], phone=phone)
+
+        await message.message.answer(
+            f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
+            parse_mode=ParseMode.HTML)
+
+        await message.message.delete()
+        await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event')

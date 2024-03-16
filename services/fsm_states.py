@@ -23,6 +23,7 @@ class FSMAddEvent(StatesGroup):
     title = State()
     event_date = State()
     except_user = State()
+    phone_to_pay = State()
 
 
 class FSMDeleteEvent(StatesGroup):

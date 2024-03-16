@@ -11,3 +11,8 @@ class WrongDateError(Exception):
     """Ошибка если дата меньше сегодняшей даты"""
     pass
 
+
+class PhoneNumberError(Exception):
+    """Ошибка формата телефона"""
+    pass
+
