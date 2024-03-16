@@ -20,7 +20,7 @@ async def notify():
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
 
         # добавление номера в событие дня рождения
-        if days_before_event == 10 and event.phone == "":
+        if days_before_event and event.phone == "":
             # получаем telegram_id именинника для сравнения с админами
             event_user = db.get_user_by_id(event.user_id)
 
