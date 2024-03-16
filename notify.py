@@ -43,7 +43,7 @@ async def notify():
             birthday_user = None
             if event.title == "birthday":
                 birthday_user = db.get_user_by_id(event.user_id)
-            msg = f"До <b>{'Дня рождения' if event.title == 'birthday' else event.title} </b>"
+            msg = f"До <b>{'Дня рождения' if event.title == 'birthday' else 'события ' + event.title} </b>"
             if birthday_user:
                 msg += f"<b>{birthday_user.user_name} {'@' + birthday_user.tg_username + ' ' if birthday_user.tg_username else ''}</b>"
 
@@ -56,9 +56,6 @@ async def notify():
                 for user in all_users:
                     if user.id == user_id:
                         await bot.send_message(user.telegram_id, msg, parse_mode=ParseMode.HTML)
-            print(f"Пользователи оповещены о приближающемся событии "
-                  f"{'пользователя ' + event.user_id if event.user_id else ''} {event.title} "
-                  f"{datetime.strftime(event.event_date, '%d.%m.%Y')}")
 
     await bot.session.close()
 

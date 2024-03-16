@@ -22,7 +22,7 @@ def main():
         if events:
             if user.id not in user_ids_with_birthday and is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)
-                print("Создано новое событие" + datetime.strftime(datetime.now(), '%d.%m.%Y'))
+                print("Создано новое событие " + datetime.strftime(datetime.now(), '%d.%m.%Y'))
         else:
             if is_less_then_31_days(user.birthday_date):
                 db.create_event_and_payers(user.id, user.birthday_date)
