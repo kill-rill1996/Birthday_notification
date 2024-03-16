@@ -299,3 +299,11 @@ def update_event_title(event_id: int, new_event_title: str):
         session.commit()
 
 
+def update_event_phone(event_id: int, new_phone: str):
+    """Изменение номера телефона"""
+    with Session() as session:
+        event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
+        event.phone = new_phone
+        session.commit()
+
+

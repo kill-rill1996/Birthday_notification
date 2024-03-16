@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 import config
 from services.errors import DateValidationError, DatePeriodError, WrongDateError, PhoneNumberError
 from services.utils import check_validation_date, validate_phone_number, parse_phone_number
-from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle
+from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle, FSMUpdateEventPhone
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
@@ -202,6 +202,7 @@ async def create_event_date_new_event(message: types.Message, state: FSMContext)
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event-except',
                        FSMAddEvent.except_user)
 async def create_event_excepting_user(callback: types.CallbackQuery, state: FSMContext):
+    """Добавление номера телефона к событию"""
     user_id = callback.data.split("_")[1]
     if user_id == "all":
         await state.update_data(except_user=None)
@@ -276,8 +277,8 @@ async def notify_users_menu(callback: types.CallbackQuery):
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
-async def update_event(callback: types.CallbackQuery, state: FSMContext):
-    """Изменение даты события с панели администратора, начало FSMUpdateEventDate"""
+async def update_event_date_start(callback: types.CallbackQuery, state: FSMContext):
+    """Изменение даты события с панели администратора, начало FSMUpdateEvent"""
     event_id = callback.data.split("_")[1]
     await state.set_state(FSMUpdateEventDate.event_date)
     await state.update_data(event_id=event_id)
@@ -286,8 +287,8 @@ async def update_event(callback: types.CallbackQuery, state: FSMContext):
 
 
 @router.message(FSMUpdateEventDate.event_date)
-async def update_event_date(message: types.Message, state: FSMContext):
-    """Изменение даты события, окончание FSMUpdateEventDate"""
+async def update_event_date_finish(message: types.Message, state: FSMContext):
+    """Изменение даты события"""
     try:
         new_event_date = check_validation_date(message.text)
 
@@ -313,6 +314,7 @@ async def update_event_date(message: types.Message, state: FSMContext):
                                  f"на <b>{datetime.strftime(updated_event.event_date, '%d.%m.%Y')}</b>")
 
         await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+
         await state.clear()
 
     except DateValidationError:
@@ -323,8 +325,60 @@ async def update_event_date(message: types.Message, state: FSMContext):
         await message.answer("Дата не может быть раньше сегодняшней. Попробуйте еще раз")
 
 
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-phone")
+async def update_event_phone_number_start(callback: types.CallbackQuery, state: FSMContext):
+    """Изменение номера телефона для события"""
+    event_id = callback.data.split("_")[1]
+    await state.update_data(event_id=event_id)
+
+    await callback.message.answer(f"Выберите номер телефона, по которому будет производиться оплата, из списка "
+                                  f"или введите в ручную в формате 8ХХХХХХХХХХ",
+                                  reply_markup=kb.phone_choose_keyboard().as_markup())
+
+    await state.set_state(FSMUpdateEventPhone.phone_number)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "phone", FSMUpdateEventPhone.phone_number)
+@router.message(FSMUpdateEventPhone.phone_number)
+async def update_event_phone_number_finish(message: types.Message, state: FSMContext):
+    """Изменение номера телефона по которому переводить деньги"""
+    if type(message) == types.Message:
+        phone = message.text
+        try:
+            validate_phone_number(phone)
+            phone = parse_phone_number(phone)
+
+            data = await state.get_data()
+
+            db.update_event_phone(event_id=data["event_id"], new_phone=phone)
+
+            await message.answer(f"Номер телефона для события изменен на <b>{phone}</b>")
+
+            events = db.get_all_events()
+            await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+
+            await state.clear()
+
+        except PhoneNumberError:
+            await message.answer(f"Неверный формат номера телефона. Попробуйте еще раз",
+                                 reply_markup=kb.phone_choose_keyboard().as_markup())
+    else:
+        phone = message.data.split("_")[1]
+
+        data = await state.get_data()
+
+        db.update_event_phone(event_id=data["event_id"], new_phone=phone)
+
+        await message.message.answer(f"Номер телефона для события изменен на <b>{phone}</b>")
+
+        events = db.get_all_events()
+        await message.message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+
+        await state.clear()
+
+
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-title")
-async def update_event(callback: types.CallbackQuery, state: FSMContext):
+async def update_event_title_start(callback: types.CallbackQuery, state: FSMContext):
     """Изменение названия события с панели администратора, начало FSMUpdateEventTitle"""
     event_id = callback.data.split("_")[1]
     await state.set_state(FSMUpdateEventTitle.event_title)
@@ -333,7 +387,7 @@ async def update_event(callback: types.CallbackQuery, state: FSMContext):
 
 
 @router.message(FSMUpdateEventTitle.event_title)
-async def update_event_date(message: types.Message, state: FSMContext):
+async def update_event_title_finish(message: types.Message, state: FSMContext):
     """Изменение названия события, окончание FSMUpdateEventTitle"""
     data = await state.get_data()
     event_id = data["event_id"]

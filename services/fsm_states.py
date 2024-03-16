@@ -37,3 +37,7 @@ class FSMUpdateEventDate(StatesGroup):
 
 class FSMUpdateEventTitle(StatesGroup):
     event_title = State()
+
+
+class FSMUpdateEventPhone(StatesGroup):
+    phone_number = State()
