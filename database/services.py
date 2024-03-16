@@ -298,6 +298,7 @@ def update_event_title(event_id: int, new_event_title: str):
         event.title = new_event_title
         session.commit()
 
+
 def update_event_phone(event_id: int, new_phone: str):
     """Изменение номера телефона"""
     with Session() as session:
