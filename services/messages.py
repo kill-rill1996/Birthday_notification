@@ -111,6 +111,9 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
 
                 msg += f"\n{sub_msg}"
 
+    if event.phone != "":
+        msg += f"\n\nНомер телефона для оплаты события:\n{event.phone}"
+
     if already_payers_count:
         msg += "\n\nНиже указаны пользователи, которые не оплатили событие"
     else:
