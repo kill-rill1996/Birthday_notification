@@ -27,7 +27,7 @@ class FSMAddEvent(StatesGroup):
 
 
 class FSMDeleteEvent(StatesGroup):
-    pick_event = State()
+    # pick_event = State()
     confirmation = State()
 
 
