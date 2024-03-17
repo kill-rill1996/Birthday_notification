@@ -38,7 +38,8 @@ async def events_handler(callback: types.CallbackQuery):
     msg = "Список всех активных событий:"
     if not events:
         msg = "Активных событий в ближайший месяц нет."
-    await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
+    await callback.message.edit_text(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
+    # await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "admin" and callback.data.split("_")[1] == "delete-event")
@@ -46,8 +47,10 @@ async def delete_events_admin_panel(callback: types.CallbackQuery, state: FSMCon
     """Удаление события через панель администратора, получение всех событий. Старт FSMDeleteEvent"""
     events = db.get_all_events()
     await state.set_state(FSMDeleteEvent.pick_event)
-    await callback.message.answer("Выберите событие, которое хотите удалить:",
-                                  reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
+    await callback.message.edit_text("Выберите событие, которое хотите удалить:",
+                                     reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
+    # await callback.message.answer("Выберите событие, которое хотите удалить:",
+    #                               reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
 
 
 @router.callback_query(FSMDeleteEvent.pick_event, lambda callback: callback.data.split("_")[0] == "event")
@@ -75,7 +78,10 @@ async def delete_event(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'delete-user')
 async def delete_users_panel(callback: types.CallbackQuery):
     all_users = db.get_all_users()
-    await callback.message.answer("Выберите пользователя, которого хотите удалить:", reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
+    await callback.message.edit_text("Выберите пользователя, которого хотите удалить:",
+                                     reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
+    # await callback.message.answer("Выберите пользователя, которого хотите удалить:",
+    #                               reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-delete')
@@ -104,7 +110,9 @@ async def all_users(callback: types.CallbackQuery):
     """Список всех пользователей"""
     users = db.get_all_users()
     msg = all_users_admin_message(users)
-    await callback.message.answer(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+    await callback.message.edit_text(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+    # await callback.message.answer(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
+
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'event')
@@ -273,7 +281,10 @@ async def notify_users_menu(callback: types.CallbackQuery):
     """Оповещение всех пользователей о ближайших событиях с клавиатуры админа"""
     users_to_ping, events = db.get_all_users_and_events_exclude_admin(callback.from_user.id)
     keyboard = kb.all_events_to_ping_keyboard(events)
-    await callback.message.answer(f"Выберите событие, о котором хотите оповестить пользователей", reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
+    await callback.message.edit_text(f"Выберите событие, о котором хотите оповестить пользователей",
+                                     reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
+    # await callback.message.answer(f"Выберите событие, о котором хотите оповестить пользователей",
+    #                               reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
