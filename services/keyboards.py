@@ -63,24 +63,24 @@ def admins_keyboard():
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
         InlineKeyboardButton(
-            text="События", callback_data="admin_events"),
+            text="События🎉", callback_data="admin_events"),
         InlineKeyboardButton(
-            text="Пользователи", callback_data="admin_users"),
+            text="Пользователи👤", callback_data="admin_users"),
     )
     keyboard.row(
         InlineKeyboardButton(
-            text="Добавить событие", callback_data="admin_add-event"
+            text="Добавить событие➕", callback_data="admin_add-event"
         ),
         InlineKeyboardButton(
-            text="Удалить польз.", callback_data="admin_delete-user"),
+            text="Удалить польз.🙅‍♂️", callback_data="admin_delete-user"),
     )
 
     keyboard.row(
         InlineKeyboardButton(
-            text="Удалить событие", callback_data="admin_delete-event"
+            text="Удалить событие➖", callback_data="admin_delete-event"
         ),
         InlineKeyboardButton(
-            text="Оповещения", callback_data="admin_ping"),
+            text="Оповещения🔔", callback_data="admin_ping"),
     )
     return keyboard
 
@@ -107,7 +107,7 @@ def all_events_keyboard(events: List[tables.Event]):
 
     keyboard.row(
         InlineKeyboardButton(
-            text="<<Назад", callback_data="admin_back"
+            text="<<Назад", callback_data="admin_back-b"
         )
     )
     return keyboard
@@ -126,7 +126,7 @@ def all_users_keyboard_to_delete(users: List[tables.User]):
 
     keyboard.row(
         InlineKeyboardButton(
-            text="<<Назад", callback_data="admin_back"
+            text="<<Назад", callback_data="admin_back-b"
         )
     )
     return keyboard
@@ -150,7 +150,7 @@ def back_admin_keyboard():
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
         InlineKeyboardButton(
-            text="<<Назад", callback_data="admin_back"
+            text="<<Назад", callback_data="admin_back-b"
         )
     )
     return keyboard
@@ -307,19 +307,19 @@ def all_events_keyboard_to_delete(events: List[tables.Event]):
             keyboard.row(
                 InlineKeyboardButton(
                     text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event_user.user_name}",
-                    callback_data=f"event_{event.id}"),
+                    callback_data=f"deleteEvent_{event.id}"),
             )
         else:
             keyboard.row(
                 InlineKeyboardButton(
                     text=f"{datetime.strftime(event.event_date, '%d.%m.%Y')} {event.title}",
-                    callback_data=f"event_{event.id}"),
+                    callback_data=f"deleteEvent_{event.id}"),
             )
     keyboard.adjust(2)
 
     keyboard.row(
         InlineKeyboardButton(
-            text="<<Назад", callback_data="something_cancel"
+            text="<<Назад", callback_data="admin_back-b"
         )
     )
     return keyboard
@@ -353,7 +353,7 @@ def all_events_to_ping_keyboard(events: List[tables.Event]):
 
     keyboard.row(
         InlineKeyboardButton(
-            text="<<Назад", callback_data="admin_back"
+            text="<<Назад", callback_data="admin_back-b"
         )
     )
     return keyboard

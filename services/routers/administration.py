@@ -20,15 +20,18 @@ router = Router()
 router.message.middleware.register(CheckIsAdminMiddleware(config.ADMINS))
 
 
-@router.callback_query(lambda callback: callback.data.split('_')[1] == 'back')  # для возвращения с кнопки "назад"
+@router.callback_query(lambda callback: callback.data.split('_')[1] == 'back' or callback.data.split('_')[1] == 'back-b')  # для возвращения с кнопки "назад"
 @router.message(Command("admin"))   # для запуска с команды /admin
 async def admin_panel_handler(message: Union[types.Message, types.CallbackQuery]):
     """Панель inline кнопок для администратора"""
     if type(message) == types.Message:
         await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
     else:
-        await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-        await message.message.delete()
+        if message.data.split('_')[1] == 'back-b':
+            await message.message.edit_text("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+        else:
+            await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+            await message.message.delete()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'events')
@@ -39,27 +42,23 @@ async def events_handler(callback: types.CallbackQuery):
     if not events:
         msg = "Активных событий в ближайший месяц нет."
     await callback.message.edit_text(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
-    # await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "admin" and callback.data.split("_")[1] == "delete-event")
-async def delete_events_admin_panel(callback: types.CallbackQuery, state: FSMContext):
-    """Удаление события через панель администратора, получение всех событий. Старт FSMDeleteEvent"""
+async def delete_events_admin_panel(callback: types.CallbackQuery):
+    """Удаление события через панель администратора, получение всех событий."""
     events = db.get_all_events()
-    await state.set_state(FSMDeleteEvent.pick_event)
     await callback.message.edit_text("Выберите событие, которое хотите удалить:",
                                      reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
-    # await callback.message.answer("Выберите событие, которое хотите удалить:",
-    #                               reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
 
 
-@router.callback_query(FSMDeleteEvent.pick_event, lambda callback: callback.data.split("_")[0] == "event")
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "deleteEvent")
 async def delete_event_admin_confirmation(callback: types.CallbackQuery, state: FSMContext):
     """Выбор события для удаления"""
     event_id = int(callback.data.split("_")[1])
     event = db.get_event_by_event_id(event_id)
     await state.set_state(FSMDeleteEvent.confirmation)
-    await callback.message.answer(admin_event_delete_confirmation(event),
+    await callback.message.edit_text(admin_event_delete_confirmation(event),
                                   reply_markup=kb.yes_no_admin_keyboard(event_id).as_markup())
 
 
@@ -68,11 +67,11 @@ async def delete_event(callback: types.CallbackQuery, state: FSMContext):
     if callback.data.split("_")[0] == "yes":
         event_id = int(callback.data.split("_")[1])
         db.hide_event(event_id)
-        await callback.message.answer("Событие удалено!")
+        await callback.message.edit_text("Событие удалено!")
     else:
-        await callback.message.answer("Отмена удаления")
+        await callback.message.edit_text("Отмена удаления.")
     await state.clear()
-    await callback.message.delete()
+    await callback.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'admin' and callback.data.split('_')[1] == 'delete-user')
@@ -80,8 +79,6 @@ async def delete_users_panel(callback: types.CallbackQuery):
     all_users = db.get_all_users()
     await callback.message.edit_text("Выберите пользователя, которого хотите удалить:",
                                      reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
-    # await callback.message.answer("Выберите пользователя, которого хотите удалить:",
-    #                               reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-delete')
@@ -111,8 +108,6 @@ async def all_users(callback: types.CallbackQuery):
     users = db.get_all_users()
     msg = all_users_admin_message(users)
     await callback.message.edit_text(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
-    # await callback.message.answer(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
-
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'event')
@@ -283,8 +278,6 @@ async def notify_users_menu(callback: types.CallbackQuery):
     keyboard = kb.all_events_to_ping_keyboard(events)
     await callback.message.edit_text(f"Выберите событие, о котором хотите оповестить пользователей",
                                      reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
-    # await callback.message.answer(f"Выберите событие, о котором хотите оповестить пользователей",
-    #                               reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
