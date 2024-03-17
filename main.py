@@ -34,11 +34,6 @@ async def init_bot() -> None:
                 if msg: # чтобы не оповещать пользователя о его др
                     await bot.send_message(user_to_send.telegram_id, msg)
 
-            # # сообщение админу
-            # await callback.message.answer("Пользователи оповещены 📝")
-            # # сообщение с меню админа
-            # await callback.message.answer("Выберите действие", reply_markup=admins_keyboard().as_markup())
-
         # отправка сообщений о конкретном событии
         else:
             event_id = int(callback.data.split("_")[1])

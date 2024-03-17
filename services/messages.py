@@ -41,9 +41,9 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
                     if payer.payment_status:
                         msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
                     else:
+                        msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Номер телефона для перевода денег \n{event.phone}\n"
-                        msg += f"❌ Событие не оплачено\n\n"
+                            msg += f"Номер телефона для перевода денег \n{event.phone}\n\n"
         msg.rstrip()
     else:
         msg = "В ближайший месяц событий нет"
@@ -174,9 +174,9 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                     if payer.payment_status:
                         msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
                     else:
+                        msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Телефона для перевода денег \n{event.phone}\n"
-                        msg += f"❌ Событие не оплачено\n\n"
+                            msg += f"Телефона для перевода денег \n{event.phone}\n\n"
         msg.rstrip()
     else: # конкретное событие
         msg = "Напоминаем о приближающемся событии\n\n"
@@ -202,9 +202,9 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                 if payer.payment_status:
                     msg += f"✅ Событие оплачено ({payer.summ}р.)\n\n"
                 else:
+                    msg += f"❌ Событие не оплачено\n"
                     if events_with_payers.phone:
-                        msg += f"Телефона для перевода денег \n{events_with_payers.phone}\n"
-                    msg += f"❌ Событие не оплачено\n\n"
+                        msg += f"Телефона для перевода денег \n{events_with_payers.phone}\n\n"
 
         # сообщение для пользователя у которого событие
         if len(msg) == len_message:

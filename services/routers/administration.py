@@ -238,6 +238,8 @@ async def create_event_phone(message: types.Message, state: FSMContext):
                 f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
                 parse_mode=ParseMode.HTML)
 
+            await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+
             await state.clear()
 
         except PhoneNumberError:
@@ -253,6 +255,8 @@ async def create_event_phone(message: types.Message, state: FSMContext):
         await message.message.answer(
             f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
             parse_mode=ParseMode.HTML)
+
+        await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
 
         await message.message.delete()
         await state.clear()

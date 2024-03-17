@@ -65,11 +65,11 @@ def admins_keyboard():
         InlineKeyboardButton(
             text="События🎉", callback_data="admin_events"),
         InlineKeyboardButton(
-            text="Пользователи👤", callback_data="admin_users"),
+            text="Пользователи👥", callback_data="admin_users"),
     )
     keyboard.row(
         InlineKeyboardButton(
-            text="Добавить событие➕", callback_data="admin_add-event"
+            text="Добав. событие➕", callback_data="admin_add-event"
         ),
         InlineKeyboardButton(
             text="Удалить польз.🙅‍♂️", callback_data="admin_delete-user"),
