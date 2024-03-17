@@ -42,7 +42,6 @@ async def events_handler(callback: types.CallbackQuery):
     if not events:
         msg = "Активных событий в ближайший месяц нет."
     await callback.message.edit_text(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
-    # await callback.message.answer(msg, reply_markup=kb.all_events_keyboard(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "admin" and callback.data.split("_")[1] == "delete-event")
@@ -51,8 +50,6 @@ async def delete_events_admin_panel(callback: types.CallbackQuery):
     events = db.get_all_events()
     await callback.message.edit_text("Выберите событие, которое хотите удалить:",
                                      reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
-    # await callback.message.answer("Выберите событие, которое хотите удалить:",
-    #                               reply_markup=kb.all_events_keyboard_to_delete(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "deleteEvent")
@@ -82,8 +79,6 @@ async def delete_users_panel(callback: types.CallbackQuery):
     all_users = db.get_all_users()
     await callback.message.edit_text("Выберите пользователя, которого хотите удалить:",
                                      reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
-    # await callback.message.answer("Выберите пользователя, которого хотите удалить:",
-    #                               reply_markup=kb.all_users_keyboard_to_delete(all_users).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-delete')
@@ -113,8 +108,6 @@ async def all_users(callback: types.CallbackQuery):
     users = db.get_all_users()
     msg = all_users_admin_message(users)
     await callback.message.edit_text(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
-    # await callback.message.answer(msg, reply_markup=kb.back_admin_keyboard().as_markup(), parse_mode=ParseMode.HTML)
-
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'event')
@@ -285,8 +278,6 @@ async def notify_users_menu(callback: types.CallbackQuery):
     keyboard = kb.all_events_to_ping_keyboard(events)
     await callback.message.edit_text(f"Выберите событие, о котором хотите оповестить пользователей",
                                      reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
-    # await callback.message.answer(f"Выберите событие, о котором хотите оповестить пользователей",
-    #                               reply_markup=keyboard.as_markup(), parse_mode=ParseMode.HTML)
 
 
 @router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-date")
