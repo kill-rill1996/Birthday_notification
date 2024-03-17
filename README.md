@@ -9,7 +9,12 @@ $ docker-compose up --buid -d
 
 Enter in container and check db:
 ```
-$ docker exec -it CONTAINER_ID psql -u USERNAME DB_NAME
+$ docker exec -it birthday_notification_postgresdb_1 psql -U admin hb_notification
+```
+
+Enter in container with bot:
+```
+$ docker exec -it birthday_notification_tgbot_1 bash
 ```
 
 
