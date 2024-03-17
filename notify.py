@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 from aiogram import Bot
 from aiogram.enums import ParseMode
 
@@ -20,7 +20,7 @@ async def notify():
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
 
         # добавление номера в событие дня рождения
-        if days_before_event and event.phone == "":
+        if days_before_event.days == config.DAYS_BEFORE_PHONE and event.phone == "":
             # получаем telegram_id именинника для сравнения с админами
             event_user = db.get_user_by_id(event.user_id)
 
@@ -36,8 +36,8 @@ async def notify():
                 else:
                     continue
 
-        # if days_before_event.days in DAYS_BEFORE:    # prod version
-        if days_before_event.days:    # debug version
+        if days_before_event.days in DAYS_BEFORE:    # prod version
+        # if days_before_event == timedelta(days=69):    # debug version
 
             # составляем сообщение
             birthday_user = None

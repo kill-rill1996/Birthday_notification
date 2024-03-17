@@ -28,3 +28,6 @@ PAID3 = os.getenv("PAID3")
 
 # admins phones for pay
 PHONES = [phone for phone in os.getenv("PHONES").split(",")]
+
+# days before admins pick phone number for bd pay
+DAYS_BEFORE_PHONE = int(os.getenv("DAYS_BEFORE_PHONE"))
