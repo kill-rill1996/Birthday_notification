@@ -37,8 +37,8 @@ async def notify():
                 else:
                     continue
 
-        # if days_before_event.days in DAYS_BEFORE:    # prod version
-        if days_before_event:    # debug version
+        if days_before_event.days in DAYS_BEFORE:    # prod version
+        # if days_before_event:    # debug version
 
             # составляем сообщение
             birthday_user = None
