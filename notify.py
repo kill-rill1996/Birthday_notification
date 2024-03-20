@@ -21,11 +21,11 @@ async def notify():
         days_before_event = event.event_date - datetime.now().date()    # кол-во дней до мероприятия
 
         # добавление номера в событие дня рождения
-        if days_before_event.days == config.DAYS_BEFORE_PHONE and event.phone == "":
+        if days_before_event.days <= config.DAYS_BEFORE_PHONE and event.phone == "":
             # получаем telegram_id именинника для сравнения с админами
             event_user = db.get_user_by_id(event.user_id)
 
-            msg = f"Через 10 дней день рождения у <b>{event_user.user_name}</b>.\nВыберите номер телефона для сбора денег:"
+            msg = f"Через 10 дней день рождения у <b>{event_user.user_name} {datetime.strftime(event.event_date, '%d.%m.%Y')}</b>.\nВыберите номер телефона для сбора денег:"
 
             # отправка администраторам сообщения о выборе номера телефона для события
             for admin_tg_id in config.ADMINS:
@@ -37,8 +37,8 @@ async def notify():
                 else:
                     continue
 
-        if days_before_event.days in DAYS_BEFORE:    # prod version
-        # if days_before_event:    # debug version
+        # if days_before_event.days in DAYS_BEFORE:    # prod version
+        if days_before_event:    # debug version
 
             # составляем сообщение
             birthday_user = None
