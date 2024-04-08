@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, BigInteger
 from sqlalchemy.orm import relationship
 
 from database.database import Base
@@ -9,7 +9,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     user_name = Column(String)
-    telegram_id = Column(Integer, index=True)
+    telegram_id = Column(BigInteger, index=True)
     birthday_date = Column(Date)
     tg_username = Column(String, nullable=True)    # data["event_from_user"].username
     events = relationship('Event', backref='user', cascade="all,delete")
