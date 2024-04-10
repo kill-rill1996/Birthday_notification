@@ -388,3 +388,29 @@ def phone_choose_admin_keyboard(event_id: int):
             )
         )
     return keyboard
+
+
+def bank_choose_admin_keyboard():
+    """Клавиатура выбора банка при уточнении у админа информации для сбора денег на день рождения"""
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.row(InlineKeyboardButton(
+        text=f"Тинькофф",
+        callback_data=f"birthday-bank-info_tinkoff")
+    )
+    keyboard.row(InlineKeyboardButton(
+        text=f"СберБанк",
+        callback_data=f"birthday-bank-info_sberbank")
+    )
+    keyboard.row(InlineKeyboardButton(
+        text=f"ВТБ",
+        callback_data=f"birthday-bank-info_vtb")
+    )
+    keyboard.row(InlineKeyboardButton(
+        text=f"Альфа-Банк",
+        callback_data=f"birthday-bank-info_alfabank")
+    )
+
+    keyboard.adjust(2)
+
+    return keyboard

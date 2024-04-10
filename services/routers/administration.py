@@ -9,7 +9,8 @@ from aiogram.fsm.context import FSMContext
 import config
 from services.errors import DateValidationError, DatePeriodError, WrongDateError, PhoneNumberError
 from services.utils import check_validation_date, validate_phone_number, parse_phone_number
-from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle, FSMUpdateEventPhone
+from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle, \
+    FSMUpdateEventPhone, FSMPaymentInfo
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
@@ -410,7 +411,7 @@ async def update_event_title_finish(message: types.Message, state: FSMContext):
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'birthday-phone')
-async def choose_phone_for_birthday(callback: types.CallbackQuery):
+async def choose_payment_info_for_birthday_start(callback: types.CallbackQuery, state: FSMContext):
     """Выбор телефона для события типа 'birthday' (только для администраторов)"""
     event_id = int(callback.data.split('_')[1])
     phone = callback.data.split('_')[2]
@@ -418,13 +419,80 @@ async def choose_phone_for_birthday(callback: types.CallbackQuery):
     event_user = db.get_user_by_id(event.user_id)
 
     if event.phone == "":
+        await state.set_state(FSMPaymentInfo.bank_info)
+        await state.update_data(event_id=event_id)
+
         db.update_event_phone(event_id, phone)
-        await callback.message.answer(
-            f'Телефон <b>{event.phone}</b> успешно добавлен для дня рождения {event_user.user_name}.',
+        await callback.message.edit_text(
+            f'Телефон <b>{phone}</b> успешно добавлен для дня рождения {event_user.user_name}.\n'
+            f'Выберите банк для сбора денег из списка или отправьте название сообщением:',
+            reply_markup=kb.bank_choose_admin_keyboard().as_markup(),
             parse_mode=ParseMode.HTML)
     else:
-        await callback.message.answer(f'Телефон <b>{event.phone}</b> уже добавлен в день рождения {event_user.user_name} другим администратором.\nВы можете изменить телефон события во вкладке "События"',
+        await callback.message.edit_text(f'Телефон <b>{event.phone}</b> уже добавлен в день рождения {event_user.user_name} другим администратором.\nВы можете изменить телефон события во вкладке "События"',
                                       parse_mode=ParseMode.HTML)
+
+
+@router.callback_query(lambda message: message.data.split("_")[0] == "birthday-bank-info", FSMPaymentInfo.bank_info)
+@router.message(FSMPaymentInfo.bank_info)
+async def choose_payment_info_for_birthday_finish(message: types.Message, state: FSMContext):
+    """Выбор банка для события типа 'birthday' (только для администраторов)"""
+    data = await state.get_data()
+    event_id = data["event_id"]
+
+    event = db.get_event_by_event_id(event_id)
+    event_user = db.get_user_by_id(event.user_id)
+
+    if type(message) == types.Message:
+        bank_info = message.text
+
+        if bank_info == "tinkoff":
+            bank = "Тинькофф"
+        elif bank_info == "vtb":
+            bank = "ВТБ"
+        elif bank_info == "alfabank":
+            bank = "Альфа-Банк"
+        elif bank_info == "sberbank":
+            bank = "СберБанк"
+        else:
+            bank = bank_info
+
+        if event.bank == "":
+            db.update_event_bank(event_id, bank)
+            await message.edit_text(
+                f'Банк "<b>{bank}</b>" успешно добавлен для дня рождения {event_user.user_name}.',
+                parse_mode=ParseMode.HTML)
+        else:
+            await message.edit_text(f'Банк <b>{event.bank}</b> уже добавлен в день рождения '
+                                 f'{event_user.user_name} другим администратором.\n'
+                                 f'Вы можете изменить банк события во вкладке "События"',
+                                 parse_mode=ParseMode.HTML)
+    else:
+        bank_info = message.data.split("_")[1]
+
+        if bank_info == "tinkoff":
+            bank = "Тинькофф"
+        elif bank_info == "vtb":
+            bank = "ВТБ"
+        elif bank_info == "alfabank":
+            bank = "Альфа-Банк"
+        elif bank_info == "sberbank":
+            bank = "СберБанк"
+        else:
+            bank = bank_info
+
+        if event.bank == "":
+            db.update_event_bank(event_id, bank)
+            await message.message.edit_text(
+                f'Банк "<b>{bank}</b>" успешно добавлен для дня рождения {event_user.user_name}.',
+                parse_mode=ParseMode.HTML)
+        else:
+            await message.message.edit_text(f'Банк <b>{event.bank}</b> уже добавлен в день рождения '
+                                         f'{event_user.user_name} другим администратором.\n'
+                                         f'Вы можете изменить банк события во вкладке "События"',
+                                         parse_mode=ParseMode.HTML)
+
+    await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'cancel', StateFilter("*"))

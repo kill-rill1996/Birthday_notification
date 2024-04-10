@@ -41,3 +41,7 @@ class FSMUpdateEventTitle(StatesGroup):
 
 class FSMUpdateEventPhone(StatesGroup):
     phone_number = State()
+
+
+class FSMPaymentInfo(StatesGroup):
+    bank_info = State()

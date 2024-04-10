@@ -28,6 +28,7 @@ class Event(Base):
     event_date = Column(Date)
     summ = Column(Integer, default=0)
     phone = Column(String, default="")
+    bank = Column(String, default="")
 
     payers = relationship("Payer", backref="event", cascade="all,delete")
 

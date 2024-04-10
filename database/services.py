@@ -305,3 +305,11 @@ def update_event_phone(event_id: int, new_phone: str):
         event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
         event.phone = new_phone
         session.commit()
+
+
+def update_event_bank(event_id: int, bank: str):
+    """Изменение банка администратором"""
+    with Session() as session:
+        event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
+        event.bank = bank
+        session.commit()
