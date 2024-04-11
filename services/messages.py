@@ -43,7 +43,10 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
                     else:
                         msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Номер телефона для перевода денег \n{event.phone}\n\n"
+                            msg += f"Номер телефона для перевода денег \n{event.phone} "
+                        if event.bank != "":
+                            msg += f" <b>\"{event.bank}\"</b>"
+                        msg += "\n\n"
         msg.rstrip()
     else:
         msg = "В ближайший месяц событий нет"
@@ -116,6 +119,9 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
     if event.phone != "":
         msg += f"\n\nНомер телефона для оплаты события:\n{event.phone}"
 
+    if event.bank != "":
+        msg += f' <b>"{event.bank}"</b>'
+
     if already_payers_count:
         msg += "\n\nНиже указаны пользователи, которые не оплатили событие"
     else:
@@ -176,7 +182,10 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                     else:
                         msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Телефона для перевода денег \n{event.phone}\n\n"
+                            msg += f"Телефона для перевода денег \n{event.phone}"
+                        if event.bank != "":
+                            msg += f" <b>\"{event.bank}\"</b>"
+                        msg += "\n\n"
         msg.rstrip()
     else: # конкретное событие
         msg = "Напоминаем о приближающемся событии\n\n"
@@ -204,7 +213,10 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                 else:
                     msg += f"❌ Событие не оплачено\n"
                     if events_with_payers.phone:
-                        msg += f"Телефона для перевода денег \n{events_with_payers.phone}\n\n"
+                        msg += f"Телефона для перевода денег \n{events_with_payers.phone}"
+                    if events_with_payers.bank != "":
+                        msg += f" <b>\"{events_with_payers.bank}\"</b>"
+                    msg += "\n\n"
 
         # сообщение для пользователя у которого событие
         if len(msg) == len_message:

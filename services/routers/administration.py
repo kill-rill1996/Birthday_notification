@@ -10,7 +10,7 @@ import config
 from services.errors import DateValidationError, DatePeriodError, WrongDateError, PhoneNumberError
 from services.utils import check_validation_date, validate_phone_number, parse_phone_number
 from services.fsm_states import FSMGetPayment, FSMAddEvent, FSMDeleteEvent, FSMUpdateEventDate, FSMUpdateEventTitle, \
-    FSMUpdateEventPhone, FSMPaymentInfo
+    FSMUpdateEventPhone, FSMPaymentInfo, FSMUpdateEventBank
 from services.middlewares import CheckIsAdminMiddleware
 from services import keyboards as kb
 from database import services as db
@@ -408,6 +408,52 @@ async def update_event_title_finish(message: types.Message, state: FSMContext):
     await message.answer(f"Название события изменено на <b>{new_title}</b>")
     await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
     await state.clear()
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "update-event-bank")
+async def update_event_bank_start(callback: types.CallbackQuery, state: FSMContext):
+    """Изменение названия события с панели администратора, начало FSMUpdateEventTitle"""
+    event_id = callback.data.split("_")[1]
+    await state.set_state(FSMUpdateEventBank.bank)
+    await state.update_data(event_id=event_id)
+    await callback.message.edit_text("Введите новое название банка или выберите из списка",
+                                     reply_markup=kb.bank_choose_admin_keyboard().as_markup())
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "birthday-bank-info", FSMUpdateEventBank.bank)
+@router.message(FSMUpdateEventBank.bank)
+async def update_event_bank_finish(message: types.Message, state: FSMContext):
+    """Изменение банка на который переводить деньги"""
+    if type(message) == types.Message:
+        bank_info = message.text
+    else:
+        bank_info = message.data.split("_")[1]
+
+    if bank_info == "tinkoff":
+        bank = "Тинькофф"
+    elif bank_info == "vtb":
+        bank = "ВТБ"
+    elif bank_info == "alfabank":
+        bank = "Альфа-Банк"
+    elif bank_info == "sberbank":
+        bank = "СберБанк"
+    else:
+        bank = bank_info
+
+    data = await state.get_data()
+    event_id = data["event_id"]
+
+    db.update_event_bank(int(event_id), bank)
+    events = db.get_all_events()
+    await state.clear()
+
+    if type(message) == types.Message:
+        await message.answer(f"Банк для события изменен на <b>{bank}</b>")
+        await message.answer(f"Список активных событий", reply_markup=kb.all_events_keyboard(events).as_markup())
+    else:
+        await message.message.edit_text(f"Банк для события изменен на <b>{bank}</b>")
+        await message.message.answer(f"Список активных событий",
+                                     reply_markup=kb.all_events_keyboard(events).as_markup())
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'birthday-phone')

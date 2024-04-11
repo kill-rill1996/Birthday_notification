@@ -24,6 +24,7 @@ class FSMAddEvent(StatesGroup):
     event_date = State()
     except_user = State()
     phone_to_pay = State()
+    bank = State()
 
 
 class FSMDeleteEvent(StatesGroup):
@@ -41,6 +42,10 @@ class FSMUpdateEventTitle(StatesGroup):
 
 class FSMUpdateEventPhone(StatesGroup):
     phone_number = State()
+
+
+class FSMUpdateEventBank(StatesGroup):
+    bank = State()
 
 
 class FSMPaymentInfo(StatesGroup):

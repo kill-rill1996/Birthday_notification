@@ -70,6 +70,9 @@ def create_notify_sub_msg(payer: tables.Payer, event: tables.Event) -> str:
         if event.phone:
             sub_msg += f"Телефона для перевода денег \n{event.phone}"
 
+        if event.bank != "":
+            sub_msg += f" <b>\"{event.bank}\"</b>"
+
         return sub_msg
 
 
