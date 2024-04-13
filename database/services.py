@@ -76,7 +76,7 @@ def get_all_events_birthday(only_active: bool = True) -> List[tables.Event]:
             return events
 
 
-def create_event_and_payers(user_id: int | None, birthday_date: datetime, title: str = "birthday", phone: str = "") -> tables.Event:
+def create_event_and_payers(user_id: int | None, birthday_date: datetime, title: str = "birthday", phone: str = "", bank: str = "") -> tables.Event:
     """Создание event и payers для этого ивента"""
     with Session() as session:
         # создаем событие
@@ -85,7 +85,7 @@ def create_event_and_payers(user_id: int | None, birthday_date: datetime, title:
         else:
             event_date = birthday_date
 
-        event = tables.Event(active=True, user_id=user_id, event_date=event_date, title=title, phone=phone)
+        event = tables.Event(active=True, user_id=user_id, event_date=event_date, title=title, phone=phone, bank=bank)
         session.add(event)
         session.commit()
 

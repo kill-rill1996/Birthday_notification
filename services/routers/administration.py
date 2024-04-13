@@ -231,17 +231,12 @@ async def create_event_phone(message: types.Message, state: FSMContext):
             validate_phone_number(phone)
             phone = parse_phone_number(phone)
 
-            data = await state.get_data()
-            db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'],
-                                       title=data['title'], phone=phone)
+            await state.update_data(phone=phone)
 
-            await message.answer(
-                f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
-                parse_mode=ParseMode.HTML)
+            await message.answer("Выберите банк для перевода денег из списка или отправьте сообщением",
+                                    reply_markup=kb.bank_choose_admin_keyboard(with_cancel=True).as_markup())
 
-            await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-
-            await state.clear()
+            await state.set_state(FSMAddEvent.bank)
 
         except PhoneNumberError:
             await message.answer(f"Неверный формат номера телефона. Попробуйте еще раз",
@@ -249,18 +244,53 @@ async def create_event_phone(message: types.Message, state: FSMContext):
     else:
         phone = message.data.split("_")[1]
 
-        data = await state.get_data()
-        db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'],
-                                   title=data['title'], phone=phone)
+        await state.update_data(phone=phone)
 
+        await message.message.edit_text("Выберите банк для перевода денег из списка или отправьте сообщением",
+                                        reply_markup=kb.bank_choose_admin_keyboard(with_cancel=True).as_markup())
+
+        await state.set_state(FSMAddEvent.bank)
+
+
+@router.callback_query(lambda callback: callback.data.split("_")[0] == "birthday-bank-info", FSMAddEvent.bank)
+@router.message(FSMAddEvent.bank)
+async def create_event_bank(message: types.Message | types.CallbackQuery, state: FSMContext):
+    """Добавление номера телефона по которому переводить деньги"""
+    data = await state.get_data()
+
+    if type(message) == types.Message:
+        bank_info = message.text
+    else:
+        bank_info = message.data.split("_")[1]
+
+    if bank_info == "tinkoff":
+        bank = "Тинькофф"
+    elif bank_info == "vtb":
+        bank = "ВТБ"
+    elif bank_info == "alfabank":
+        bank = "Альфа-Банк"
+    elif bank_info == "sberbank":
+        bank = "СберБанк"
+    else:
+        bank = bank_info
+
+    db.create_event_and_payers(user_id=data['except_user'], birthday_date=data['event_date'],
+                               title=data['title'], phone=data["phone"], bank=bank)
+    await state.clear()
+
+    if type(message) == types.Message:
+        await message.answer(
+            f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
+            parse_mode=ParseMode.HTML)
+
+        await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+
+    else:
         await message.message.answer(
             f"Событие <b>{data['title']} {datetime.strftime(data['event_date'], '%d.%m.%Y')}</b> успешно создано!",
             parse_mode=ParseMode.HTML)
 
         await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-
-        await message.message.delete()
-        await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[0] == 'user-event')

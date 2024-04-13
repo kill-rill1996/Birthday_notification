@@ -397,7 +397,7 @@ def phone_choose_admin_keyboard(event_id: int):
     return keyboard
 
 
-def bank_choose_admin_keyboard():
+def bank_choose_admin_keyboard(with_cancel: bool = False):
     """Клавиатура выбора банка при уточнении у админа информации для сбора денег на день рождения"""
     keyboard = InlineKeyboardBuilder()
 
@@ -419,5 +419,8 @@ def bank_choose_admin_keyboard():
     )
 
     keyboard.adjust(2)
+
+    if with_cancel:
+        keyboard.row(InlineKeyboardButton(text="Отмена", callback_data="something_cancel"))
 
     return keyboard
