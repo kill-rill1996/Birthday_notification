@@ -43,7 +43,7 @@ def upcoming_events_message(events_with_payers: List[tables.Event], event_users:
                     else:
                         msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Номер телефона для перевода денег \n{event.phone} "
+                            msg += f"Телефон для перевода денег \n{event.phone} "
                         if event.bank != "":
                             msg += f" <b>\"{event.bank}\"</b>"
                         msg += "\n\n"
@@ -117,7 +117,7 @@ def admin_event_info_message(event: tables.Event, event_user: tables.User, payer
                 msg += f"\n{sub_msg}"
 
     if event.phone != "":
-        msg += f"\n\nНомер телефона для оплаты события:\n{event.phone}"
+        msg += f"\n\nТелефон для оплаты события:\n{event.phone}"
 
     if event.bank != "":
         msg += f' <b>"{event.bank}"</b>'
@@ -182,7 +182,7 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                     else:
                         msg += f"❌ Событие не оплачено\n"
                         if event.phone:
-                            msg += f"Телефона для перевода денег \n{event.phone}"
+                            msg += f"Телефон для перевода денег \n{event.phone}"
                         if event.bank != "":
                             msg += f" <b>\"{event.bank}\"</b>"
                         msg += "\n\n"
@@ -213,7 +213,7 @@ def ping_user_message(user_to_send: tables.User, event_users: List[tables.User],
                 else:
                     msg += f"❌ Событие не оплачено\n"
                     if events_with_payers.phone:
-                        msg += f"Телефона для перевода денег \n{events_with_payers.phone}"
+                        msg += f"Телефон для перевода денег \n{events_with_payers.phone}"
                     if events_with_payers.bank != "":
                         msg += f" <b>\"{events_with_payers.bank}\"</b>"
                     msg += "\n\n"
