@@ -47,7 +47,9 @@ async def command_register_handler(message: types.Message, state: FSMContext):
                              f"или удалить его с помощью команды /delete", parse_mode=ParseMode.HTML)
     else:
         await state.set_state(FSMUserState.user_name)
-        await message.answer("Укажите ваше имя", reply_markup=kb.cancel_inline_keyboard().as_markup())
+        await message.answer("Укажите ваше <b>имя</b> и <b>фамилию</b>",
+                             reply_markup=kb.cancel_inline_keyboard().as_markup(),
+                             parse_mode=ParseMode.HTML)
 
 
 # создание пользователя через кнопку (callback)
