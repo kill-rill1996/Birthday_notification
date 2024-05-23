@@ -95,7 +95,6 @@ async def delete_user(callback: types.CallbackQuery):
 async def confirm_delete_user(callback: types.CallbackQuery):
     """Подтверждение удаления пользователя от администратора"""
     if callback.data.split("_")[0] == "yes":
-        print(callback.data.split('_')[1])
         deleted_user = db.delete_user_by_id(int(callback.data.split('_')[1]))
         await callback.message.answer(f'Пользователь <b>"{deleted_user.user_name}"</b> удален', parse_mode=ParseMode.HTML)
     else:
@@ -149,24 +148,33 @@ async def confirm_payment(message: types.Message, state: FSMContext):
     data = await state.get_data()
     payer_id = data["payer_id"]
     user = db.get_user_by_payer_id(payer_id)
+    payer = db.get_payer_by_id(payer_id)
 
     if type(message) == types.Message:
-        try:
-            amount = int(message.text)
+        if payer.payment_status:
+            await state.clear()
+            await message.answer("Оплата для этого пользователя уже добавлена.", reply_markup=kb.admins_keyboard().as_markup())
+        else:
+            try:
+                amount = int(message.text)
+                db.add_payment(payer_id, amount)
+                msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
+                await message.answer(msg, parse_mode=ParseMode.HTML)
+                await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+                await state.clear()
+            except ValueError:
+                await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
+    else:
+        if payer.payment_status:
+            await state.clear()
+            await message.message.answer("Оплата для этого пользователя уже добавлена.", reply_markup=kb.admins_keyboard().as_markup())
+        else:
+            amount = int(message.data.split("_")[1])
             db.add_payment(payer_id, amount)
             msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
-            await message.answer(msg, parse_mode=ParseMode.HTML)
-            await message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
+            await message.message.answer(msg, parse_mode=ParseMode.HTML)
+            await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
             await state.clear()
-        except ValueError:
-            await message.answer("Введите пожалуйста число без букв и иных символов", reply_markup=kb.cancel_inline_keyboard().as_markup())
-    else:
-        amount = int(message.data.split("_")[1])
-        db.add_payment(payer_id, amount)
-        msg = f"Оплата пользователем <b>{user.user_name}</b> в размере <b>{amount}р.</b> зафиксирована"
-        await message.message.answer(msg, parse_mode=ParseMode.HTML)
-        await message.message.answer("Выберите действие", reply_markup=kb.admins_keyboard().as_markup())
-        await state.clear()
 
 
 @router.callback_query(lambda callback: callback.data.split('_')[1] == 'add-event')

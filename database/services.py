@@ -313,3 +313,10 @@ def update_event_bank(event_id: int, bank: str):
         event = session.query(tables.Event).filter(tables.Event.id == event_id).first()
         event.bank = bank
         session.commit()
+
+
+def get_payer_by_id(payer_id: int) -> tables.Payer:
+    """Получение payer по payer_id"""
+    with Session() as session:
+        payer = session.query(tables.Payer).filter(tables.Payer.id == payer_id).first()
+        return payer
