@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 from aiogram import Bot
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest
 
 import config
 from config import TOKEN, DAYS_BEFORE
@@ -55,8 +56,10 @@ async def notify():
                 sub = create_notify_sub_msg(payer, event)
                 for user in all_users:
                     if user.id == payer.user_id:
-                        await bot.send_message(user.telegram_id, msg + sub, parse_mode=ParseMode.HTML)
-
+                        try:
+                            await bot.send_message(user.telegram_id, msg + sub, parse_mode=ParseMode.HTML)
+                        except TelegramBadRequest:
+                            print(f"Не удалось отправить сообщение пользователю {user.user_name} id: {user.telegram_id}")
     await bot.session.close()
 
 
