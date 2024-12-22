@@ -4,7 +4,7 @@
 
 Start command to run app with docker:
 ```
-$ docker-compose up --buid -d
+$ docker-compose up --build -d
 ```
 
 Enter in container and check db:
